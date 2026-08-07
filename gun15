@@ -1,0 +1,3 @@
+
+
+return require(game:GetService("ReplicatedStorage").Std.Binder).new(require(script.Parent.HotbarItemConsts).TAG_NAME, require(script.Parent.HotbarItem));
