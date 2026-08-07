@@ -1,0 +1,53 @@
+
+
+local l__Players__1 = game:GetService("Players");
+local l__ReplicatedStorage__2 = game:GetService("ReplicatedStorage");
+local v3 = {
+	Gui = nil
+};
+v3.__index = v3;
+local u1 = require(l__ReplicatedStorage__2.Game.GameUtil);
+local u2 = require(l__ReplicatedStorage__2.Resource.Settings);
+function v3.Init(p1)
+	v3.Gui = p1.GetScreenGui("BottomRightGui");
+	u1.OnTeamChanged:Connect(function(p2)
+		v3.SetColor(u2.TeamColor[p2]);
+	end);
+	v3.SetColor(u2.TeamColor[u1.Team]);
+end;
+function v3.SetColor(p3)
+	v3.Gui.ContainerAmmo.ImageColor3 = p3;
+end;
+function v3.new()
+	local v4 = {};
+	setmetatable(v4, v3);
+	v3.Gui.ContainerAmmo.Visible = true;
+	v4.FlagOutOfAmmo = false;
+	v3.SetColor(u2.TeamColor[u1.Team]);
+	return v4;
+end;
+function v3.Update(p4, p5, p6)
+	local v5 = nil;
+	if p6 ~= nil then
+		p4.MaxAmmo = p6;
+	end;
+	v5 = v3.Gui;
+	if p4.MaxAmmo then
+		v5.ContainerAmmo.Ammo.Text = ("%d / %s"):format(p5, p4.MaxAmmo);
+	else
+		v5.ContainerAmmo.Ammo.Text = ("%d"):format(p5);
+	end;
+	local v6 = p5 <= 0;
+	if v6 ~= p4.FlagOutOfAmmo then
+		if v6 then
+			v3.SetColor(Color3.new(0.2, 0.2, 0.2));
+		else
+			v3.SetColor(u2.TeamColor[u1.Team]);
+		end;
+		p4.FlagOutOfAmmo = v6;
+	end;
+end;
+function v3.Destroy(p7)
+	v3.Gui.ContainerAmmo.Visible = false;
+end;
+return v3;
