@@ -1,0 +1,32 @@
+-- Decompiled with the Synapse X Luau decompiler.
+
+local v1 = {
+	mapCategoryData = {}, 
+	allData = {}, 
+	takesAmmo = {}
+};
+for v2, v3 in ipairs(script.Parent.Data:GetChildren()) do
+	v1.mapCategoryData[v3.Name] = require(v3);
+end
+for v5, v6 in pairs(v1.mapCategoryData) do
+	for v7, v8 in ipairs(v6) do
+		table.insert(v1.allData, v8);
+		if v8.For then
+			v1.takesAmmo[v8.For] = true;
+		end;	
+	end
+end;
+function v1.getCategoryData(p1)
+	local v10 = v1.mapCategoryData[p1];
+	if not v10 then
+		error(("No data exists for category: %s"):format(p1));
+	end;
+	return v10;
+end;
+function v1.getAllData()
+	return v1.allData;
+end;
+function v1.doesTakeAmmo(p2)
+	return v1.takesAmmo[p2];
+end;
+return v1;
