@@ -1,0 +1,149 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = {};
+v2.__index = v2;
+local u1 = require(l__ReplicatedStorage__1.Std.Maid);
+local l__Players__2 = game:GetService("Players");
+function v2.new(p1)
+	local v3 = {};
+	setmetatable(v3, v2);
+	v3.obj = p1;
+	v3._maid = u1.new();
+	if v3:GetOwner() == l__Players__2.LocalPlayer then
+		v3:_setupLocal();
+	end;
+	return v3;
+end;
+function v2.GetOwner(p2)
+	if p2.obj.Parent == nil then 
+		return 
+	end
+	local l__Parent__4 = p2.obj.Parent.Parent;
+	assert(l__Parent__4.Parent == game:GetService("Players"), "this hotbarItem is not a valid descendant of a player");
+	return l__Parent__4;
+end;
+function v2.SetKeyCode(p3, p4)
+	p3.keyCode = p4;
+end;
+function v2.SetBindText(p5, p6)
+	p5._frame.Index.Visible = p6 ~= nil;
+	if p6 then
+		p5._frame.Index.Text = p6;
+	end;
+end;
+function v2.SetDropVisible(p7, p8)
+	assert(typeof(p8) == "boolean", "value must be a boolean");
+	p7._frame.Drop.Visible = p8;
+end;
+local u3 = require(script.Parent.HotbarItemRes);
+local u4 = require(l__ReplicatedStorage__1.Std.Signal);
+local u5 = require(l__ReplicatedStorage__1.Std.Spring);
+local u6 = require(l__ReplicatedStorage__1.Inventory.InventoryItemUtils);
+local u7 = require(l__ReplicatedStorage__1.Inventory.InventoryItemConsts);
+function v2._setupLocal(p9)
+	local v5 = u3.presetFrame:Clone();
+	v5.Parent = u3.gui.Container;
+	p9._frame = v5;
+	p9._maid:GiveTask(p9._frame);
+	p9:_setupDisplayOrder();
+	p9:_setupImageSrc();
+	p9:_setupDragging();
+	p9.onDragStarted = u4.new();
+	p9._maid:GiveTask(p9.onDragStarted);
+	p9.sizeSpring = u5.new(1, 0, 0.5, 50);
+	p9.spinSpring = u5.new(0, 0, 0.8, 20);
+	p9._maid:GiveTask(p9.obj:GetAttributeChangedSignal(u7.EQUIPPED_ATTR_NAME):Connect(function()
+		local v6 = 0.5;
+		if u6.getEquipped(p9.obj) then
+			v6 = 0.5;
+		else
+			v6 = 0;
+		end;
+		p9._frame.ImageTransparency = v6;
+	end));
+	local v7 = 0.5;
+	if u6.getEquipped(p9.obj) then
+		v7 = 0.5;
+	else
+		v7 = 0;
+	end;
+	p9._frame.ImageTransparency = v7;
+	p9._maid:GiveTask(v5.Drop.MouseButton1Down:Connect(function()
+		p9:GetInventoryItem():AttemptDrop();
+	end));
+end;
+local u8 = require(script.Parent.HotbarItemUtils);
+local u9 = require(script.Parent.HotbarItemConsts);
+function v2._setupDisplayOrder(p10)
+	p10._frame.LayoutOrder = u8.getDisplayOrder(p10.obj) or 0;
+	p10._maid:GiveTask(p10.obj:GetAttributeChangedSignal(u9.DISPLAY_ORDER_ATTR_NAME):Connect(function()
+		p10._frame.LayoutOrder = u8.getDisplayOrder(p10.obj) or 0;
+	end));
+end;
+function v2._setupImageSrc(p11)
+	p11._frame.Icon.Image = u8.getImageSrc(p11.obj) or "";
+	p11._maid:GiveTask(p11.obj:GetAttributeChangedSignal(u9.IMAGE_SRC_ATTR_NAME):Connect(function()
+		p11._frame.Icon.Image = u8.getImageSrc(p11.obj) or "";
+	end));
+end;
+function v2._setupDragging(p12)
+	p12._maid:GiveTask(p12._frame.MouseButton1Down:Connect(function()
+		p12:_onPressStarted();
+	end));
+	p12._maid:GiveTask(p12._frame.MouseButton1Up:Connect(function()
+		p12:_onPressEnded();
+	end));
+end;
+function v2._onPressStarted(p13)
+	local v8 = (p13._pressCounter or 0) + 1;
+	p13._pressCounter = v8;
+	p13._pressCounterAtStart = p13._pressCounter;
+	task.delay(u9.MIN_DRAG_DURATION, function()
+		if p13._pressCounter ~= v8 then
+			return;
+		end;
+		p13._pressCounter = p13._pressCounter + 1;
+		p13.onDragStarted:Fire();
+	end);
+end;
+function v2._onPressEnded(p14)
+	if p14._pressCounter ~= p14._pressCounterAtStart then
+		return;
+	end;
+	p14._pressCounter = (p14._pressCounter or 0) + 1;
+	p14:GetInventoryItem():AttemptSelect();
+end;
+local u10 = require(l__ReplicatedStorage__1.Inventory.InventoryItemBinder);
+function v2.GetInventoryItem(p15)
+	return u10:Get(p15.obj);
+end;
+local l__RunService__11 = game:GetService("RunService");
+function v2.SetSize(p16, p17)
+	p16.sizeSpring:SetTarget(p17);
+	p16._maid.springHeartbeat = l__RunService__11.Heartbeat:Connect(function()
+		local v9, v10 = p16.sizeSpring:Update();
+		if math.abs(p17 - v9) < 0.001 and math.abs(v10) < 0.001 then
+			p16._maid.springHeartbeat = nil;
+			v9 = p17;
+		end;
+		p16._frame.Size = UDim2.new(v9, 0, v9, 0);
+	end);
+end;
+function v2.Spin(p18)
+	p18.spinSpring:SetTarget(360);
+	p18.spinSpring.p = 0;
+	p18._maid.spinHeartbeat = l__RunService__11.Heartbeat:Connect(function()
+		local v11, v12 = p18.spinSpring:Update();
+		if math.abs(360 - v11) < 0.001 and math.abs(v12) < 0.001 then
+			p18._maid.spinHeartbeat = nil;
+			v11 = 0;
+		end;
+		p18._frame.Icon.Rotation = v11;
+	end);
+end;
+function v2.Destroy(p19)
+	p19._maid:Destroy();
+	setmetatable(p19, nil);
+end;
+return v2;
