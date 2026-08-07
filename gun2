@@ -1,0 +1,131 @@
+-- Decompiled with the Synapse X Luau decompiler.
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = {};
+v2.__index = v2;
+v2.__ClassName = "GunShopItem";
+local u1 = require(l__ReplicatedStorage__1.Std.Maid);
+local l__GunShop__2 = l__ReplicatedStorage__1.Resource.GunShop;
+local u3 = require(l__ReplicatedStorage__1.Game.Level2.LevelSystem);
+local l__LocalPlayer__4 = game:GetService("Players").LocalPlayer;
+function v2.new()
+	local v3 = {};
+	setmetatable(v3, v2);
+	v3._maid = u1.new();
+	v3._itemFrame = l__GunShop__2.PresetItem:Clone();
+	v3._maid:GiveTask(v3._itemFrame);
+	v3._layoutOrder = 0;
+	v3.onMouseButton1Down = v3._itemFrame.Bottom.Action.MouseButton1Down;
+	v3._price = 0;
+	v3._owned = false;
+	v3._equipped = false;
+	v3._level = nil;
+	v3._itemName = nil;
+	v3._maid:GiveTask(u3.getOnLevelChangedSignal():Connect(function(p1)
+		if p1 ~= l__LocalPlayer__4 then
+			return;
+		end;
+		v3:UpdateLevel();
+	end));
+	return v3;
+end;
+function v2.GetName(p2)
+	return p2._itemName;
+end;
+function v2.SetName(p3, p4)
+	p3._itemName = p4;
+	p3._itemFrame.Name = p4;
+	p3._itemFrame.Top.Title.Text = p4:upper();
+end;
+function v2.SetImageId(p5, p6)
+	p5._itemFrame.Top.Icon.Image = ("rbxassetid://%d"):format(p6);
+end;
+function v2.SetImageColor(p7, p8)
+	p7._itemFrame.Top.Icon.ImageColor3 = p8;
+end;
+function v2.SetPrice(p9, p10)
+	p9._price = p10;
+	p9:Update();
+end;
+function v2.SetLevel(p11, p12)
+	p11._level = p12;
+	p11:UpdateLevel();
+end;
+function v2.SetOwned(p13, p14)
+	if p13._owned ~= p14 then
+		p13._owned = p14;
+		p13:Update();
+		p13:UpdateLevel();
+	end;
+end;
+function v2.GetEquipped(p15)
+	return p15._equipped;
+end;
+function v2.SetEquipped(p16, p17)
+	if p16._equipped ~= p17 then
+		p16._equipped = p17;
+		p16:Update();
+	end;
+end;
+local u5 = require(l__ReplicatedStorage__1.Game.Level2.LevelUtils);
+function v2.UpdateLevel(p18)
+	local v4 = false;
+	if p18._level ~= nil then
+		v4 = not p18._owned;
+	end;
+	p18._itemFrame.Bottom.Level.Visible = v4;
+	if v4 then
+		p18._itemFrame.Bottom.Level.Text = ("LVL %d"):format(p18._level);
+		p18._itemFrame.Bottom.Level.Lock.Visible = u5.yieldLevel(l__LocalPlayer__4) < p18._level;
+	end;
+end;
+local u6 = require(l__ReplicatedStorage__1.Game.Gamepass.GamepassUtils);
+local u7 = require(l__ReplicatedStorage__1.Game.Gamepass.GamepassSystem);
+function v2.AddRequiredGamepass(p19, p20)
+	assert(p20);
+	local v5 = l__GunShop__2.PresetRequiredIcon:Clone();
+	v5.Parent = p19._itemFrame.Bottom.RequiredContainer;
+	p19._maid:GivePromise(u7.promiseImageId(u6.GetGamepassFromEnum(p20).PassId):andThen(function(p21)
+		v5.Image = ("rbxassetid://%d"):format(p21);
+		v5.Visible = true;
+	end):catch(warn));
+	p19._maid:GiveTask(v5.MouseButton1Down:Connect(function()
+		u6.PromptGamepass(p20);
+	end));
+end;
+local u8 = require(l__ReplicatedStorage__1.Module.Format);
+function v2.Update(p22)
+	if p22._equipped then
+		p22._itemFrame.Bottom.Action.Text = "UNEQUIP";
+		p22._itemFrame.Bottom.Action.TextColor3 = Color3.fromRGB(212, 39, 39);
+	elseif p22._owned then
+		p22._itemFrame.Bottom.Action.Text = "EQUIP";
+		p22._itemFrame.Bottom.Action.TextColor3 = Color3.fromRGB(212, 39, 39);
+	else
+		if p22._price == 0 then
+			p22._itemFrame.Bottom.Action.Text = "FREE";
+		else
+			p22._itemFrame.Bottom.Action.Text = u8.Currency(p22._price);
+		end;
+		p22._itemFrame.Bottom.Action.TextColor3 = Color3.fromRGB(112, 212, 69);
+	end;
+	if p22._owned then
+		p22._itemFrame.Image = "rbxassetid://5834235796";
+		return;
+	end;
+	p22._itemFrame.Image = "rbxassetid://5834236192";
+end;
+function v2.GetLayoutOrder(p23)
+	return p23._itemFrame.LayoutOrder;
+end;
+function v2.SetLayoutOrder(p24, p25)
+	p24._itemFrame.LayoutOrder = p25;
+end;
+function v2.SetParent(p26, p27)
+	p26._itemFrame.Parent = p27;
+end;
+function v2.Destroy(p28)
+	p28._maid:Destroy();
+	p28._maid = nil;
+end;
+return v2;
