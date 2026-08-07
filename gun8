@@ -1,0 +1,99 @@
+-- Decompiled with the Synapse X Luau decompiler.
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = require(l__ReplicatedStorage__1.Std.Audio);
+local v3 = require(l__ReplicatedStorage__1.Std.Joint);
+local v4 = require(l__ReplicatedStorage__1.Std.Spring);
+local v5 = require(script.Parent.Gun);
+local v6 = {
+	__ClassName = "Shotgun"
+};
+v6.__index = v6;
+setmetatable(v6, v5);
+function v6.new(p1, p2, p3)
+	local v7 = v5.new(p1, p2, p3);
+	setmetatable(v7, v6);
+	v7:Setup(p3);
+	v7.LastHitBucketTime = 0;
+	v7.LastHitBucketCount = 0;
+	v7.BulletEmitter.BulletWhizEnabled = false;
+	return v7;
+end;
+function v6.SetupModel(p4)
+	v5.SetupModel(p4);
+	local l__Pump__8 = p4.Model.Motion.Pump;
+	l__Pump__8.Anchored = false;
+	p4.MotorPump = v3.Motor(l__Pump__8, p4.BoundingBox);
+	p4.SpringPump = v4.new(Vector3.new(), Vector3.new(), 0.9, 20);
+end;
+function v6.SetupArmWelds(p5)
+	v3.Weld(p5.Model.Skeleton.LeftArm, p5.Model.Motion.Pump);
+	v3.Weld(p5.Model.Skeleton.RightArm, p5.BoundingBox);
+	p5.Model.Skeleton.LeftArm.Anchored = false;
+	p5.Model.Skeleton.RightArm.Anchored = false;
+end;
+function v6.UpdateItemSprings(p6)
+	v5.UpdateItemSprings(p6);
+	p6.PumpPosition = p6.SpringPump:Update();
+end;
+function v6.UpdateItemJoints(p7)
+	v5.UpdateItemJoints(p7);
+	p7.MotorPump.C1 = CFrame.new(p7.PumpPosition);
+end;
+function v6.ReloadDropAmmoVisual(p8)
+
+end;
+function v6.ReloadRefillAmmoVisual(p9)
+
+end;
+function v6.BulletEmitterOnLocalHitPlayer(p10, ...)
+	local v9 = tick();
+	if v9 - p10.LastHitBucketTime > 0.5 then
+		p10.LastHitBucketTime = v9;
+		p10.LastHitBucketCount = 0;
+	end;
+	p10.LastHitBucketCount = p10.LastHitBucketCount + 1;
+	if p10.LastHitBucketCount <= 10 then
+		v5.BulletEmitterOnLocalHitPlayer(p10, ...);
+	end;
+end;
+function v6.ShootSound(p11, p12)
+	if not p12 then
+		v2.ObjectLocal(p11.Tip, p11.Config.Sound.gun_shotgun_shot_01, {
+			Pitch = 1 + math.random() * 0.1 - 0.05
+		});
+		task.delay(0.3, function()
+			v2.ObjectLocal(p11.Tip, p11.Config.Sound.gun_shotgun_cock_01, {
+				Pitch = 1 + math.random() * 0.1 - 0.05
+			});
+			p11.SpringPump:Accelerate(Vector3.new(0, 0, 35));
+		end);
+		local l__ParticleEmitter__1 = p11.Tip.ParticleEmitter;
+		spawn(function()
+			l__ParticleEmitter__1:Emit(3);
+			for v10 = 1, 5 do
+				l__ParticleEmitter__1:Emit(5);
+				task.wait();
+			end;
+		end);
+	end;
+end;
+function v6.ReloadDropAmmoSound(p13)
+	v2.ObjectLocal(p13.Tip, p13.Config.Sound.gun_shotgun_dry_fire_01, {
+		Pitch = 0.5
+	});
+end;
+function v6.ReloadRefillAmmoSound(p14)
+	for v11 = 1, 4 do
+		v2.ObjectLocal(p14.Tip, p14.Config.Sound.gun_shotgun_cock_01, {
+			Pitch = 0.9
+		});
+		task.wait(0.375);
+	end;
+	task.wait(0.1);
+	v2.ObjectLocal(p14.Tip, p14.Config.Sound.gun_shotgun_dry_fire_01, {
+		Pitch = 0.5
+	});
+	p14.SpringPump:Accelerate(Vector3.new(0, 0, 35));
+end;
+return v6;
