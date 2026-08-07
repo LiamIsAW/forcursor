@@ -1,0 +1,41 @@
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = {};
+v2.__index = v2;
+local u1 = require(l__ReplicatedStorage__1.Std.Maid);
+local l__GunShop__2 = l__ReplicatedStorage__1.Resource.GunShop;
+function v2.new()
+	local v3 = {};
+	setmetatable(v3, v2);
+	v3._maid = u1.new();
+	local v4 = l__GunShop__2.PresetSlider:Clone();
+	v4.Name = "Slider";
+	v3._sliderFrame = v4;
+	v3._maid:GiveTask(v4);
+	local l__UIListLayout__5 = v4.UIListLayout;
+	v3._maid:GiveTask(l__UIListLayout__5:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		v4.CanvasSize = UDim2.new(0, l__UIListLayout__5.AbsoluteContentSize.X + 20, 1, 0);
+	end));
+	v3._listItem = {};
+	return v3;
+end;
+function v2.AddItem(p1, p2)
+	local v6 = 0;
+	if #p1._listItem > 0 then
+		v6 = p1._listItem[#p1._listItem]:GetLayoutOrder();
+	end;
+	p2:SetLayoutOrder(v6 + 1);
+	p2:SetParent(p1._sliderFrame);
+	table.insert(p1._listItem, p2);
+end;
+function v2.SetParent(p3, p4)
+	p3._sliderFrame.Parent = p4;
+end;
+function v2.Destroy(p5)
+	for v7, v8 in ipairs(p5._listItem) do
+		v8:Destroy();	
+	end
+	p5._maid:Destroy();
+	p5._maid = nil;
+end;
+return v2;
