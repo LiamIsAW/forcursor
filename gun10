@@ -1,0 +1,15 @@
+
+
+return require(game:GetService("ReplicatedStorage").Std.TableUtils).requireValidIndex({
+	SHOOT_REMOTE_NAME = "Shoot", 
+	RELOAD_REMOTE_NAME = "Reload", 
+	DAMAGE_REMOTE_NAME = "Damage", 
+	WALLBANG_DAMAGE_MULTIPLIER = 0.5, 
+	HEADSHOT_DAMAGE_MULTIPLIER = 2, 
+	HEADSHOT_DAMAGE_DISPLAY_COLOR = Color3.fromRGB(255, 223, 0), 
+	WALLBANG_DAMAGE_DISPLAY_COLOR = Color3.fromRGB(139, 0, 0), 
+	DEFAULT_DAMAGE_DISPLAY_COLOR = Color3.fromRGB(255, 255, 255), 
+	NEXT_SHOT_POSSIBLE_ATTRIBUTE_NAME = "NextShotPossibleTime", 
+	SERVER_NEXT_SHOT_POSSIBLE_ATTRIBUTE_NAME = "ServerNextShotPossibleTime", 
+	DO_NOT_SET_NEXT_SHOT_POSSIBLE_CONFIG_NAME = "DontSetNextShootPossible"
+});
