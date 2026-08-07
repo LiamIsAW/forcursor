@@ -1,0 +1,93 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local l__UserInputService__1 = game:GetService("UserInputService");
+local u2 = Color3.new(1, 0, 0);
+local u3 = Color3.new(1, 1, 1);
+local u4 = require(l__ReplicatedStorage__1.Module.Logic);
+local function u5(p1, p2)
+	local v2 = p1.Spring:Update();
+	local l__CrossHair__3 = p1.Gui.CrossHair;
+	p2 = p2 or l__UserInputService__1:GetMouseLocation();
+	local l__AbsoluteSize__4 = l__CrossHair__3.AbsoluteSize;
+	l__CrossHair__3.Position = UDim2.new(0, p2.X - l__AbsoluteSize__4.X * 0.5, 0, p2.Y - l__AbsoluteSize__4.Y * 0.5);
+	l__CrossHair__3.VerticalTop.Position = UDim2.new(0.5, 0, 0, -v2);
+	l__CrossHair__3.VerticalBottom.Position = UDim2.new(0.5, 0, 0.5, v2);
+	l__CrossHair__3.HorizontalLeft.Position = UDim2.new(0, -v2, 0.5, -1);
+	l__CrossHair__3.HorizontalRight.Position = UDim2.new(0.5, v2, 0.5, -1);
+end;
+local function u6(p3)
+	l__UserInputService__1.MouseIconEnabled = true;
+	p3.Gui.Enabled = false;
+	p3.Gui:Destroy();
+	p3.Gui = nil;
+end;
+local function u7(p4, p5)
+	local v5 = 2;
+	if p5 then
+		v5 = 2;
+	else
+		v5 = 5;
+	end;
+	p4.Spring:SetTarget(v5);
+end;
+local function u8(p6)
+	local v6 = p6.Int + 1;
+	p6.Int = v6;
+	local l__Gui__7 = p6.Gui;
+	if not l__Gui__7 then
+		return false;
+	end;
+	local l__CrossHair__8 = l__Gui__7.CrossHair;
+	local l__VerticalTop__9 = l__CrossHair__8.VerticalTop;
+	local l__VerticalBottom__10 = l__CrossHair__8.VerticalBottom;
+	local l__HorizontalLeft__11 = l__CrossHair__8.HorizontalLeft;
+	local l__HorizontalRight__12 = l__CrossHair__8.HorizontalRight;
+	l__VerticalTop__9.BackgroundColor3 = u2;
+	l__VerticalBottom__10.BackgroundColor3 = u2;
+	l__HorizontalLeft__11.BackgroundColor3 = u2;
+	l__HorizontalRight__12.BackgroundColor3 = u2;
+	delay(0.1, function()
+		if p6.Int ~= v6 then
+			return;
+		end;
+		l__VerticalTop__9.BackgroundColor3 = u3;
+		l__VerticalBottom__10.BackgroundColor3 = u3;
+		l__HorizontalLeft__11.BackgroundColor3 = u3;
+		l__HorizontalRight__12.BackgroundColor3 = u3;
+	end);
+end;
+local function u9(p7)
+	l__UserInputService__1.MouseIconEnabled = false;
+	p7.Gui.Enabled = true;
+end;
+local function u10(p8)
+	l__UserInputService__1.MouseIconEnabled = true;
+	p8.Gui.Enabled = false;
+end;
+return {
+	Make = function()
+		local v13 = u4.MakeSpring();
+		v13.p = 0;
+		v13.v = 0;
+		v13.Target = 5;
+		v13.Freq = 20;
+		v13.Damp = 0.7;
+		local v14 = l__ReplicatedStorage__1.Resource.CrossHairGui:Clone();
+		v14.Enabled = false;
+		local v15 = {
+			Gui = v14, 
+			Spring = v13, 
+			Update = u5, 
+			Destroy = u6, 
+			ADS = u7, 
+			Flare = u8, 
+			Int = 1, 
+			Enable = u9, 
+			Disable = u10
+		};
+		l__UserInputService__1.MouseIconEnabled = false;
+		v15.Gui.Enabled = true;
+		return v15;
+	end
+};
