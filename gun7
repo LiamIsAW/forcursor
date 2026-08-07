@@ -1,0 +1,1104 @@
+
+
+local l__Players__1 = game:GetService("Players")
+local l__Debris__2 = game:GetService("Debris")
+local l__TouchEnabled__3 = game:GetService("UserInputService").TouchEnabled
+local l__RunService__4 = game:GetService("RunService")
+local l__ReplicatedStorage__5 = game:GetService("ReplicatedStorage")
+local v6 = require(l__ReplicatedStorage__5.Module.Time)
+local v7 = require(l__ReplicatedStorage__5.Std.Joint)
+local v8 = require(l__ReplicatedStorage__5.Module.R15IKv2)
+local v9 = require(l__ReplicatedStorage__5.Std.Spring)
+local v10 = require(l__ReplicatedStorage__5.Module.RayCast)
+local v11 = require(l__ReplicatedStorage__5.Std.Audio)
+local v12 = require(l__ReplicatedStorage__5.Game.ItemSystem.ItemSystem)
+local v13 = require(l__ReplicatedStorage__5.Game.ItemSystem.ItemCamera)
+local v14 = require(l__ReplicatedStorage__5.Game.ItemSystem.BulletEmitter)
+local v15 = require(l__ReplicatedStorage__5.Game.CrossHair)
+local v16 = require(l__ReplicatedStorage__5.Game.AmmoGui)
+local v17 = require(l__ReplicatedStorage__5.Game.ItemSkin.ItemSkinIds)
+local v18 = require(l__ReplicatedStorage__5.Game.ItemSkin.UI.UI)
+local v19 = require(l__ReplicatedStorage__5.Game.Home.HomeItem.HomeItemBinder)
+local v20 = require(l__ReplicatedStorage__5.Game.Vehicle)
+local v21 = require(l__ReplicatedStorage__5.Game.GunShop.GunShopUtils)
+local v22 = require(l__ReplicatedStorage__5.Inventory.InventoryItemUtils)
+local v23 = require(l__ReplicatedStorage__5.Std.RxInstanceUtils)
+local v24 = require(l__ReplicatedStorage__5.CCTV.CameraBinder)
+local v25 = require(l__ReplicatedStorage__5.GameSettings.GameSettingsService)
+local v26 = require(l__ReplicatedStorage__5.GameSettings.gameSettingType)
+local v27 = require(l__ReplicatedStorage__5.Std.Maid)
+local v28 = require(l__ReplicatedStorage__5.Game.ItemSystem.GunSystemConsts)
+local v29 = require(script.Parent.Item)
+local u1 = CFrame.new()
+local v30 = {
+	bullet_impact_bass = 2837091387, 
+	bullet_impact_metal_light_01 = 2121004076, 
+	bullet_impact_rock_03 = 2121004325, 
+	bullet_impact_wood_light_04 = 2121004681
+}
+local v31 = {
+	__ClassName = "Gun"
+}
+v31.__index = v31
+setmetatable(v31, v29)
+local u2 = false
+local u3 = nil
+local u4 = 1
+function v31.Init(p1)
+	assert(not u2, "gun already Init")
+	u2 = true
+	u3 = p1.Event
+	local l__em__32 = p1.em
+	function l__em__32.btmgd8ne(p2)
+		for v33, v34 in pairs(p2) do
+			local v35 = l__Players__1:FindFirstChild(v33)
+			if v35 then
+				local v36 = v12.GetEquipped(v35)
+				if v36 ~= nil and v36.Local == false and v36.SetThirdMousePosition then
+					v36:SetThirdMousePosition(v34)
+				end
+			end
+		end
+	end
+	function l__em__32.fz91jnci(p3, p4, p5)
+		local v37 = v12.GetEquipped(p3)
+		if v37 ~= nil and v37.SetLeaning then
+			v37:SetLeaning(p4, p5)
+		end
+	end
+	local v38 = {
+		name = "scopeSens", 
+		title = "Scope Sensitivity", 
+		type = v26.Slider, 
+		defaultValue = 100, 
+		order = 210, 
+		min = 10, 
+		max = 100, 
+		step = 1, 
+		textMap = function(p6)
+			return ("%d%%"):format(p6)
+		end
+	}
+	v25.add(v38)
+	u4 = v38.defaultValue / 100
+	v38.onChanged:Connect(function(p7)
+		u4 = p7 / 100
+	end)
+end
+function v31.new(p8, p9, p10)
+	local v39 = v29.new(p8, p10)
+	setmetatable(v39, v31)
+	v39.inventoryItemValue = p9
+	local v40 = v22.getName(p9)
+	local v41 = l__ReplicatedStorage__5.Game.ItemConfig:FindFirstChild(v40)
+	if v41 == nil then
+		error(("No config file exists for item: %s"):format(v40))
+	end
+	v39.Config = require(v41)
+	v39.LastReplicateMousePosition = tick()
+	v39.SimulateLocal = false
+	v39.MinimalFx = false
+	return v39
+end
+function v31.Setup(p11, p12)
+	p11:SetupModel()
+	p11.IgnoreList = { p11.Character, p11.Model, workspace.Items }
+	if p11.Local then
+		local v42 = v20.GetLocalVehicleModel()
+		if v42 then
+			table.insert(p11.IgnoreList, v42)
+		end
+	end
+	p11:SetupArmWelds()
+	p11:SetupTip()
+	p11:AttachModelToPlayer()
+	p11:SetupBulletEmitter()
+	p11:SetupSprings(p12)
+	p11.IK = v8.BuildPacketArms(p11.Character)
+	if p11.Local then
+		p11:SetupCrossHair()
+	end
+	p11:SetupAmmoGui()
+	if p11.Local then
+		local v43 = v9.new(Vector3.new(), Vector3.new(), 0.6, 75)
+		p11.SpringCamera = v43
+		v13.SetRecoilSpring(v43)
+	end
+	if not p11.Local then
+		p11.SpringThirdMousePosition = v9.new(Vector3.new(), Vector3.new(), 0.9, 20)
+	end
+	p11.JointNeckC0 = p11.JointNeck.C0
+	p11.JointWaistC0 = p11.JointWaist.C0
+	p11.IsShooting = false
+	p11.IsReloading = false
+	p11.IsScoping = false
+	p11.IsLeaning = false
+	p11.IsLeaningRight = false
+	p11.MousePosition = Vector3.new()
+	p11._lastUpdateViewDist = 0
+	p11:SetupShoot()
+	p11:Equip()
+	p11.Maid:GiveTask(function()
+		p11.JointNeck.C0 = p11.JointNeckC0
+		p11.JointWaist.C0 = p11.JointWaistC0
+	end)
+	p11.Maid:GiveTask(function()
+		p11.Motor:Destroy()
+		p11.Motor = nil
+		p11.Model:Destroy()
+		p11.Model = nil
+	end)
+end
+function v31.SetupShoot(p13)
+	p13.Maid:GiveTask(v23.observeOneChildNamed(p13.inventoryItemValue, v28.SHOOT_REMOTE_NAME, function(p14, p15)
+		p15:GiveTask(p14.OnClientEvent:Connect(function()
+			p13:Shoot()
+		end))
+	end))
+end
+function v31.SetupCrossHair(p16)
+	p16.CrossHair = v15.Make()
+	p16.CrossHair.Gui.Parent = p16.Player.PlayerGui
+	p16.Maid:GiveTask(function()
+		p16.CrossHair:Destroy()
+		p16.CrossHair = nil
+	end)
+end
+function v31.SetupAmmoGui(p17)
+	if p17.Local then
+		p17.AmmoGui = v16.new()
+		local v44 = v22.getAttr(p17.inventoryItemValue, "AmmoCurrent")
+		if v44 then
+			v22.setAttr(p17.inventoryItemValue, "AmmoCurrentLocal", v44)
+		end
+		local u5 = 0
+		p17.Maid:GiveTask(p17.inventoryItemValue:GetAttributeChangedSignal("AmmoCurrent"):Connect(function()
+			local v45 = v22.getAttr(p17.inventoryItemValue, "AmmoCurrent")
+			if u5 < v45 then
+				v22.setAttr(p17.inventoryItemValue, "AmmoCurrentLocal", v45)
+			end
+			u5 = v45
+		end))
+		local function v46()
+			local v47 = v22.getAttr(p17.inventoryItemValue, "AmmoLeft")
+			local v48 = false
+			if v47 then
+				if v47 > 0 then
+					v48 = tostring(v47)
+				else
+					v48 = false
+				end
+			else
+				v48 = "\226\136\158"
+			end
+			p17.AmmoGui:Update(v22.getAttr(p17.inventoryItemValue, "AmmoCurrentLocal") or 0, v48)
+		end
+		p17.Maid:GiveTask(p17.inventoryItemValue:GetAttributeChangedSignal("AmmoCurrentLocal"):Connect(v46))
+		p17.Maid:GiveTask(p17.inventoryItemValue:GetAttributeChangedSignal("AmmoLeft"):Connect(v46))
+		v46()
+		p17.Maid:GiveTask(function()
+			p17.AmmoGui:Destroy()
+			p17.AmmoGui = nil
+		end)
+	end
+end
+function v31.SetupModel(p18, p19)
+	if p19 == nil then
+		p19 = v22.getName(p18.inventoryItemValue)
+	end
+	local v49 = l__ReplicatedStorage__5.Resource.ItemSystem.Models:FindFirstChild(p19)
+	if v49 == nil then
+		error(("Could not find model for item `%s`"):format(p19))
+	end
+	local v50 = v49:Clone()
+	for v51, v52 in pairs(v50:GetDescendants()) do
+		if v52:IsA("BasePart") then
+			v52.CanCollide = false
+			v52.CanQuery = false
+			v52.CanTouch = false
+		end
+	end
+	p18.Model = v50
+	local l__BoundingBox__53 = v50.Skeleton.BoundingBox
+	p18.BoundingBox = l__BoundingBox__53
+	v7.WeldAllTo(v50.Model, l__BoundingBox__53)
+	if p18.ApplySkin then
+		p18.Maid:GiveTask(p18.inventoryItemValue:GetAttributeChangedSignal("SkinName"):Connect(function()
+			p18:ApplySkinLocal(p18.inventoryItemValue:GetAttribute("SkinName"))
+		end))
+		p18:ApplySkinLocal(p18.inventoryItemValue:GetAttribute("SkinName"))
+	end
+end
+function v31.SetupTip(p20)
+	local l__Tip__54 = p20.Model.Skeleton.Tip
+	p20.Tip = l__Tip__54
+	p20.TipOffset = p20.BoundingBox.CFrame:PointToObjectSpace(l__Tip__54.Position)
+	v7.Weld(p20.Model.Skeleton.Tip, p20.BoundingBox)
+	p20.Model.Skeleton.Tip.Anchored = false
+end
+function v31.SetupArmWelds(p21)
+	v7.Weld(p21.Model.Skeleton.LeftArm, p21.BoundingBox)
+	v7.Weld(p21.Model.Skeleton.RightArm, p21.BoundingBox)
+	p21.Model.Skeleton.LeftArm.Anchored = false
+	p21.Model.Skeleton.RightArm.Anchored = false
+end
+function v31.ApplySkinLocal(p22, p23)
+	local l__Model__55 = p22.Model:FindFirstChild("Model")
+	if not l__Model__55 then
+		return
+	end
+	local l__Body__56 = l__Model__55:FindFirstChild("Body")
+	if not l__Body__56 then
+		return
+	end
+	if p23 == nil or p23 == "None" then
+		l__Body__56.TextureID = ""
+		return
+	end
+	local v57 = v17[p23]
+	if v57 == nil then
+		error(("No skin by name of %s exists."):format(p23))
+	end
+	local v58 = v57[p22.__ClassName]
+	if v58 == nil then
+		error(("Skin %s has no image id for item: %s"):format(p23, v58))
+	end
+	l__Body__56.TextureID = ("rbxassetid://%d"):format(v58)
+end
+function v31.ApplySkin(p24, p25)
+	if p24.Local then
+		u3:FireServer("khr6eql9", p24.inventoryItemValue, p25)
+	end
+end
+function v31.AttachModelToPlayer(p26)
+	local l__UpperTorso__59 = p26.UpperTorso
+	p26.BoundingBox.CFrame = l__UpperTorso__59.CFrame
+	p26.Model.Parent = workspace.Items
+	p26.Motor = v7.BlankMotor6D(p26.BoundingBox, l__UpperTorso__59)
+end
+function v31.BulletEmitterOnLocalHitPlayer(p27, p28, p29, p30, p31, p32, p33, p34, p35, p36, p37, p38, p39, p40, p41)
+	local v60 = v6.GetNowSync()
+	p27.inventoryItemValue:FindFirstChild(v28.DAMAGE_REMOTE_NAME):FireServer(p28, p29, p30, p31, p32 - 0.6609848067581097 * v60, p33, p34, p35 + 0.3968011188544949 * v60, p36, p37, p38, p39, p40 + 0.6369049829533174 * v60, p41)
+	if p27.CrossHair then
+		p27.CrossHair:Flare()
+	end
+	if not p27.MinimalFx then
+		v11.ObjectLocal(p27.Tip, v30.bullet_impact_bass, {
+			TimePosition = 0, 
+			Volume = 1, 
+			Pitch = 1
+		})
+	end
+end
+local u6 = {
+	[Enum.Material.Wood] = v30.bullet_impact_wood_light_04, 
+	[Enum.Material.Metal] = v30.bullet_impact_metal_light_01, 
+	[Enum.Material.DiamondPlate] = v30.bullet_impact_metal_light_01, 
+	[Enum.Material.Slate] = v30.bullet_impact_rock_03
+}
+function v31.SetupBulletEmitter(p42)
+	p42.LastImpactSound = 0
+	p42.LastImpact = 0
+	p42.BulletEmitter = v14.new(p42.Local)
+	p42.BulletEmitter.IgnoreList = assert(p42.IgnoreList)
+	p42.BulletEmitter.LifeSpan = 1
+	p42.BulletEmitter.GravityVector = (p42.Config.GravityMultiplier or 1) * Vector3.new(0, -workspace.Gravity / 10, 0)
+	local u7 = p42.BulletEmitterOnLocalHitPlayer
+	p42.BulletEmitter.OnLocalHitPlayer:Connect(function(...)
+		u7(p42, ...)
+	end)
+	p42.BulletEmitter.OnHitSurface:Connect(function(p43, p44, p45, p46)
+		local v61 = tick()
+		if not p42.MinimalFx then
+			local v62 = Instance.new("Part")
+			v62.Color = p43.Color
+			v62.Massless = true
+			v62.Size = Vector3.new(0.5, 0.5, 0.1)
+			v62.Anchored = false
+			v62.CanCollide = false
+			v62.Transparency = 1
+			v62.CFrame = CFrame.new(Vector3.new(), p45) * CFrame.Angles(0, 0, math.random() * math.pi * 2) + p44
+			local v63 = Instance.new("Decal")
+			v63.Texture = "rbxassetid://2078626"
+			v63.Color3 = p43.Color
+			v63.Face = Enum.NormalId.Front
+			v63.Parent = v62
+			v7.Weld(v62, p43)
+			v62.Parent = workspace.Items
+			l__Debris__2:AddItem(v62, 2)
+			if p42.Local and v61 - p42.LastImpactSound > 0.03 then
+				local v64 = u6[p46]
+				if v64 ~= nil then
+					p42.LastImpactSound = v61
+					v11.ObjectLocal(v62, v64, {
+						Volume = 0.4
+					})
+				end
+			end
+			local v65 = l__ReplicatedStorage__5.Resource.ItemSystem.Projectiles.Debris:Clone()
+			v65.EmissionDirection = Enum.NormalId.Front
+			v65.Size = NumberSequence.new(0.1)
+			v65.SpreadAngle = Vector2.new(15, 15)
+			v65.Parent = v62
+			v65:Emit(3)
+		end
+		if p42.Local and v61 - p42.LastImpact > 0.1 then
+			p42.LastImpact = v61
+			local v66 = p43
+			if v66:IsDescendantOf(workspace.Vehicles) then
+				local v67 = 0
+				while true do
+					v66 = v66.Parent
+					v67 = v67 + 1
+					if v66 ~= nil and v66:FindFirstChild("BoundingBox") then
+						break
+					end
+					if v67 >= 5 then
+						break
+					end				
+				end
+				local v68 = false
+				if v66 ~= nil then
+					v68 = v66:FindFirstChild("BoundingBox")
+				end
+				if v68 then
+					u3:FireServer("pmzp1mhb", v68.Parent, p42.__ClassName)
+					return
+				end
+			else
+				if not (not workspace:FindFirstChild("ShootingRange")) and not (not v66:IsDescendantOf(workspace.ShootingRange)) or workspace:FindFirstChild("Museum") and v66:IsDescendantOf(workspace.Museum) then
+					u3:FireServer("vw1bkhq4", v66)
+					return
+				end
+				local v69 = p43
+				repeat
+					local v70 = v19:Get(v69)
+					if v70 then
+						v70:Damage()
+						return
+					end
+					local v71 = v24:Get(v69)
+					if v71 then
+						v71:Damage()
+						return
+					end
+					v69 = v69.Parent
+				until v69 == workspace
+			end
+		end
+	end)
+	local u8 = l__RunService__4.Heartbeat:Connect(function()
+		--debug.profilebegin("Gun Bullet Emitter Update")
+		p42.BulletEmitter:Update()
+		--debug.profileend()
+	end)
+	p42.Maid:GiveTask(function()
+		if #p42.BulletEmitter.Bullets > 0 then
+			p42.BulletEmitter.OnQueueEmptied:Connect(function()
+				u8:Disconnect()
+				u8 = nil
+				p42.BulletEmitter:Destroy()
+			end)
+			return
+		end
+		u8:Disconnect()
+		u8 = nil
+		p42.BulletEmitter:Destroy()
+	end)
+end
+function v31.SetupSprings(p47, p48)
+	if p47.Local and p48 and p48.SpringItemOffset then
+		p47.SpringItemOffset = p48.SpringItemOffset
+		p47.SpringItemOffset.Damp = 0.7
+		p47.SpringItemOffset.Freq = 50
+		p47.SpringItemOffset:SetTarget(p47.Config.Motion.Hip.Springs.ItemOffset)
+	else
+		p47.SpringItemOffset = v9.new(p47.Config.Motion.Hip.Springs.ItemOffset, Vector3.new(), 0.7, 50)
+	end
+	if p47.Local and p48 and p48.SpringItemRotation then
+		p47.SpringItemRotation = p48.SpringItemRotation
+		p47.SpringItemRotation.Damp = 0.9
+		p47.SpringItemRotation.Freq = 25
+		p47.SpringItemRotation:SetTarget(p47.Config.Motion.Hip.Springs.ItemRotation)
+	else
+		p47.SpringItemRotation = v9.new(p47.Config.Motion.Hip.Springs.ItemRotation, Vector3.new(), 0.9, 25)
+	end
+	if not p47.Local or not p48 or not p48.SpringNeckRotation then
+		p47.SpringNeckRotation = v9.new(p47.Config.Motion.Hip.Springs.NeckRotation, Vector3.new(), 0.9, 25)
+		return
+	end
+	p47.SpringNeckRotation = p48.SpringNeckRotation
+	p47.SpringNeckRotation.Damp = 0.9
+	p47.SpringNeckRotation.Freq = 25
+	p47.SpringNeckRotation:SetTarget(p47.Config.Motion.Hip.Springs.NeckRotation)
+end
+local function u9(p49)
+	local l__x__72 = p49.x
+	local l__y__73 = p49.y
+	local l__z__74 = p49.z
+	local v75 = (l__x__72 * l__x__72 + l__y__73 * l__y__73 + l__z__74 * l__z__74) ^ 0.5
+	if not (v75 > 1E-05) then
+		return u1
+	end
+	local v76 = math.sin(v75 * 0.5) / v75
+	return CFrame.new(0, 0, 0, v76 * l__x__72, v76 * l__y__73, v76 * l__z__74, math.cos(v75 * 0.5))
+end
+function v31.UpdateItemSprings(p50)
+	local v77 = p50.SpringItemOffset:Update()
+	local v78, v79 = p50.SpringItemRotation:Update()
+	p50.ItemOffsetPosition = v77
+	p50.ItemRotationCFrame = u9(v78)
+	p50.ItemRotationVelocityCFrame = u9(v79 * 0.01)
+end
+function v31.UpdateItemJoints(p51)
+
+end
+function v31.ApplyItemJointsC1(p52)
+	if p52.Motor then
+		p52.Motor.C1 = p52.ItemRotationCFrame * CFrame.new(p52.ItemOffsetPosition) * p52.JointWaist.C1
+	end
+end
+function v31.ApplyItemJointsTransform(p53)
+	if p53.Motor then
+		p53.Motor.Transform = (p53.ItemRotationCFrame * CFrame.new(p53.ItemOffsetPosition) * p53.JointWaist.C1):Inverse()
+	end
+end
+function v31.UpdateBodySprings(p54)
+	p54.NeckRotationPosition = p54.SpringNeckRotation:Update()
+end
+function v31.UpdateMousePosition(p55)
+	local v80 = tick()
+	local v81 = nil
+	if p55.Local then
+		v81 = p55:ProjectMouseLocationToWorld((p55:GetMouseLocation()))
+	else
+		v81 = p55.SpringThirdMousePosition:Update()
+	end
+	p55.MousePosition = v81
+	if p55.Local and v80 - p55.LastReplicateMousePosition > 0.25 then
+		p55.LastReplicateMousePosition = v80
+		u3:FireServer("h888s96c", v81)
+	end
+end
+local function u10(p56, p57, p58, p59, p60, p61)
+	if p59 == 0 or p60 == 0 or p61 == 0 then
+		return 0, 0
+	end
+	local v82 = p59 * p59 + p61 * p61
+	local v83 = (p61 < 0 and math.atan(p59 / p61) or math.pi - math.atan(-p59 / p61)) + (p56 * p56 < v82 and math.asin(p56 / v82 ^ 0.5) or math.asin(v82 ^ 0.5 / p56))
+	local v84 = math.cos(v83)
+	local v85 = math.sin(v83)
+	p60 = p60
+	p61 = p61 * v84 + p59 * v85
+	p59 = p59 * v84 - p61 * v85
+	local v86 = p60 * p60 + p61 * p61
+	return v83, (p61 < 0 and math.atan(-p60 / p61) or math.atan(p60 / p61)) - (p57 * p57 < v86 and math.asin(p57 / v86 ^ 0.5) or math.asin(v86 ^ 0.5 / p57))
+end
+function v31.ComputeBodyJoints(p62)
+	local l__JointRoot__87 = p62.JointRoot
+	local l__JointWaist__88 = p62.JointWaist
+	p62.JointWaist.Transform = CFrame.new()
+	p62.JointNeck.Transform = CFrame.new()
+	local v89 = (p62.RootPart.CFrame * l__JointRoot__87.C0 * l__JointRoot__87.Transform * l__JointRoot__87.C1:Inverse() * p62.JointWaistC0 * l__JointWaist__88.Transform):PointToObjectSpace(p62.MousePosition)
+	local v90 = p62.ItemRotationCFrame:Inverse() * l__JointWaist__88.C1:Inverse() * p62.ItemRotationCFrame * CFrame.new(p62.ItemOffsetPosition + p62.TipOffset) * l__JointWaist__88.C1
+	local v91, v92 = u10(v90.x, v90.y, v90.z, v89.x, v89.y, v89.z)
+	if v92 < -math.pi * 0.44 then
+		v92 = -math.pi * 0.44
+	end
+	p62.JointWaistTransform = CFrame.Angles(0, v91, 0) * CFrame.Angles(v92, 0, 0) * p62.ItemRotationCFrame:inverse()
+	p62.JointNeckTransform = p62.ItemRotationCFrame * u9(p62.NeckRotationPosition) * p62.ItemRotationVelocityCFrame
+end
+function v31.ApplyBodyJointsC1(p63)
+	if p63.JointWaistTransform then
+		p63.JointWaist.C0 = p63.JointWaistC0 * p63.JointWaistTransform
+		p63.JointNeck.C0 = p63.JointNeckC0 * p63.JointNeckTransform
+	end
+end
+function v31.ApplyBodyJointsTransform(p64)
+	if p64.JointWaistTransform then
+		p64.JointWaist.Transform = p64.JointWaistTransform
+		p64.JointNeck.Transform = p64.JointNeckTransform
+	end
+end
+function v31.ClearBodyTransform(p65)
+	p65.JointWaist.Transform = CFrame.new()
+	p65.JointNeck.Transform = CFrame.new()
+end
+function v31.UpdateArmIK(p66)
+	local l__IK__93 = p66.IK
+	local l__Model__94 = p66.Model
+	l__IK__93.RightArm = l__Model__94.Skeleton.RightArm.Position
+	l__IK__93.LeftArm = l__Model__94.Skeleton.LeftArm.Position
+	l__IK__93.RightAngle = p66.Config.Motion.RightElbowAngle
+	l__IK__93.LeftAngle = p66.Config.Motion.LeftElbowAngle
+end
+function v31.ComputeArmJoints(p67)
+	p67:UpdateArmIK()
+	v8.ComputeArms(p67.IK)
+end
+function v31.ApplyArmJoints(p68)
+	local l__IK__95 = p68.IK
+	v8.ApplyArms(l__IK__95)
+	if p68.Config.Motion.RightWristRotation then
+		l__IK__95.RightWrist.Transform = p68.Config.Motion.RightWristRotation
+	end
+	if p68.Config.Motion.LeftWristRotation then
+		l__IK__95.LeftWrist.Transform = p68.Config.Motion.LeftWristRotation
+	end
+end
+function v31.ReloadDropAmmoVisual(p69)
+	local l__Ammo__96 = p69.Model.Model.Ammo
+	local v97 = l__Ammo__96:Clone()
+	v97:ClearAllChildren()
+	v97.CFrame = l__Ammo__96.CFrame
+	v97.CanCollide = true
+	v97.Velocity = Vector3.new(0, -20, 0)
+	v97.Parent = workspace
+	l__Debris__2:AddItem(v97, 6)
+	l__Ammo__96.Transparency = 1
+end
+function v31.ReloadRefillAmmoVisual(p70)
+	p70.Model.Model.Ammo.Transparency = 0
+end
+function v31.ReloadDropAmmoSound(p71)
+	error("TODO: Implement")
+end
+function v31.ReloadRefillAmmoSound(p72)
+	error("TODO: Implement")
+end
+function v31._reload(p73)
+	p73.inventoryItemValue:FindFirstChild(v28.RELOAD_REMOTE_NAME):FireServer()
+end
+function v31.Reload(p74, p75)
+	if p74.IsReloading then
+		return false
+	end
+	if p74.inventoryItemValue:GetAttribute("IsReloading") then
+		return false
+	end
+	if p74:GetAmmoLeft() <= 0 then
+		return false
+	end
+	p74.IsReloading = true
+	p74:ReloadDropAmmoVisual()
+	p74:ReloadDropAmmoSound()
+	p74:_reload()
+	if p74.Local then
+		p74:StartReloadProgressCircle()
+	end
+	task.delay(p74.Config.ReloadTime - (p74.Config.LocalReloadOffset or 0), function()
+		if p74.Destroyed then
+			return false
+		end
+		p74:ReloadRefillAmmoVisual()
+		if p74.Destroyed then
+			return false
+		end
+		p74:ReloadRefillAmmoSound()
+		if p74.Destroyed then
+			return false
+		end
+		p74.IsReloading = false
+	end)
+	return true
+end
+function v31.GetAmmoLeft(p76)
+	return v22.getAttr(p76.inventoryItemValue, "AmmoLeft") or math.huge
+end
+function v31.ShootCheckConditions(p77)
+	local l__Tip__98 = p77.Tip
+	if p77.IsReloading then
+		return false
+	end
+	if p77.inventoryItemValue:GetAttribute("IsReloading") then
+		return false
+	end
+	if p77.Local then
+		if not (v22.getAttr(p77.inventoryItemValue, "AmmoCurrentLocal") <= 0) then
+			if l__Tip__98 then
+				local l__Position__99 = p77.RootPart.Position
+				local v100 = l__Tip__98.Position - l__Position__99
+				local v101, v102 = v10.RayIgnoreNonCollideWithIgnoreList(l__Position__99, v100.Unit, v100.Magnitude, p77.IgnoreList)
+				if (v102 - l__Tip__98.Position).Magnitude > 0.1 then
+					return false
+				elseif not p77:CheckNextShotPossible() then
+					return false
+				else
+					return true
+				end
+			elseif not p77:CheckNextShotPossible() then
+				return false
+			else
+				return true
+			end
+		end
+	elseif not p77:CheckNextShotPossible() then
+		return false
+	else
+		return true
+	end
+	p77:ShootSound(true)
+	if p77.IsReloading == false then
+		p77:InputBegan({
+			UserInputType = Enum.UserInputType.Keyboard, 
+			KeyCode = Enum.KeyCode.R
+		})
+		return true
+	end
+	return false
+end
+function v31.CheckNextShotPossible(p78)
+	local v103 = p78.Player:GetAttribute(v28.NEXT_SHOT_POSSIBLE_ATTRIBUTE_NAME)
+	if v103 and workspace:GetServerTimeNow() < v103 then
+		return false
+	end
+	return true
+end
+function v31.SetNextShotPossible(p79)
+	local l__FireFreq__104 = p79.Config.FireFreq
+	local v105 = workspace:GetServerTimeNow()
+	if not l__FireFreq__104 then
+		warn("No FireFreq")
+		return false
+	end
+	if not p79.Config[v28.DO_NOT_SET_NEXT_SHOT_POSSIBLE_CONFIG_NAME] then
+		p79.Player:SetAttribute(v28.NEXT_SHOT_POSSIBLE_ATTRIBUTE_NAME, v105 + 1 / l__FireFreq__104)
+	end
+	return true
+end
+function v31.ShootLocal(p80)
+	if not p80.Local then
+		return false
+	end
+	local v106 = 0.3
+	local v107 = 0.3
+	if p80.IsScoping then
+		v106 = 0.3
+	else
+		v106 = 1
+	end
+	p80.SpringCamera:Accelerate(Vector3.new(math.random() * 2 - 1, math.random() * 2 - 1, math.random() * 2 - 1).Unit * 0.15 * p80.Config.CamShakeMagnitude * v106)
+	if p80.IsScoping then
+		v107 = 0.3
+	else
+		v107 = 1
+	end
+	p80.CrossHair.Spring:Accelerate(600 * v107)
+	return true
+end
+function v31.ShootOther(p81)
+	p81.SpringItemOffset:Accelerate(Vector3.new(0, 0, 50) + Vector3.new(math.random() * 2 - 1, math.random() * 2 - 1, math.random() * 2 - 1).Unit * 3)
+	p81.SpringItemRotation:Accelerate(Vector3.new(-1, 2, 0).Unit * 12 + Vector3.new(math.random() * 2 - 1, math.random() * 2 - 1, math.random() * 2 - 1).Unit * 2)
+	local l__TipDirection__108 = p81.TipDirection
+	if not l__TipDirection__108 then
+		return
+	end
+	local l__CFrame__11 = p81.Tip.CFrame
+	local function v109()
+		local v110 = l__TipDirection__108
+		local v111 = (p81.BulletSpread or 0) + (p81.Config.BulletSpread or 0)
+		if v111 > 0 then
+			local v112 = math.sqrt(math.random()) * v111
+			local v113 = math.random() * math.pi * 2
+			v110 = v110 + l__CFrame__11:VectorToWorldSpace(Vector3.new(v112 * math.cos(v113), v112 * math.sin(v113), 0))
+		end
+		return v110
+	end
+	if p81.Config.BulletsPerShot then
+		for v114 = 1, p81.Config.BulletsPerShot do
+			p81.BulletEmitter:Emit(l__CFrame__11.p, v109(), p81.Config.BulletSpeed)
+		end
+	else
+		p81.BulletEmitter:Emit(l__CFrame__11.p, v109(), p81.Config.BulletSpeed)
+	end
+	return true
+end
+function v31.Shoot(p82)
+	p82:ShootLocal()
+	p82:ShootOther()
+	p82:ShootSound(false)
+	return true
+end
+function v31.ShootSound(p83, p84)
+	error("TODO: Implement")
+end
+function v31._attemptShoot(p85)
+	if not p85:ShootCheckConditions() then
+		return false
+	end
+	p85:DecrementAmmo()
+	p85:SetNextShotPossible()
+	if p85.Local or p85.SimulateLocal then
+		p85:_shootBroadcast()
+	end
+	p85:Shoot()
+	return true
+end
+function v31.DecrementAmmo(p86)
+	if not p86.Local and not p86.SimulateLocal then
+		return false
+	end
+	local v115 = v22.getAttr(p86.inventoryItemValue, "AmmoCurrent") - 1
+	v22.setAttr(p86.inventoryItemValue, "AmmoCurrentLocal", v115)
+	if v115 <= 0 and p86.IsReloading == false then
+		p86:InputBegan({
+			UserInputType = Enum.UserInputType.Keyboard, 
+			KeyCode = Enum.KeyCode.R
+		})
+	end
+	return true
+end
+function v31._shootBroadcast(p87)
+	local v116 = p87.inventoryItemValue:FindFirstChild(v28.SHOOT_REMOTE_NAME)
+	if v116 then
+		v116:FireServer()
+	end
+end
+function v31.UpdateCrossHair(p88)
+	if p88.CrossHair then
+		p88.CrossHair:Update(p88:GetMouseLocation())
+	end
+end
+function v31.RenderStepped(p89)
+	if p89.Local then
+		p89:UpdateCrossHair()
+	end
+	debug.profilebegin("UpdateMousePosition")
+	p89:UpdateMousePosition()
+	debug.profileend()
+	debug.profilebegin("UpdateItemSprings")
+	p89:UpdateItemSprings()
+	debug.profileend()
+	debug.profilebegin("UpdateBodySprings")
+	p89:UpdateBodySprings()
+	debug.profileend()
+	debug.profilebegin("ComputeBodyJoints")
+	p89:ComputeBodyJoints()
+	debug.profileend()
+	if p89.Local then
+		debug.profilebegin("ApplyBodyJoints")
+		p89:ApplyBodyJointsC1()
+		debug.profileend()
+		debug.profilebegin("ApplyItemJoints")
+		p89:ApplyItemJointsC1()
+		debug.profileend()
+	end
+	p89:UpdateItemJoints()
+	debug.profilebegin("ComputeArmJoints")
+	p89:ComputeArmJoints()
+	debug.profileend()
+	local l__Tip__117 = p89.Tip
+	if l__Tip__117 ~= nil then
+		p89.TipDirection = l__Tip__117.CFrame.LookVector
+	end
+	if (p89.Local or p89.SimulateLocal) and p89.IsShooting == true then
+		p89:_attemptShoot()
+	end
+end
+function v31.Stepped(p90)
+	p90:ClearBodyTransform()
+	if not p90.Local then
+		debug.profilebegin("ApplyBodyJoints")
+		p90:ApplyBodyJointsTransform()
+		debug.profileend()
+		debug.profilebegin("ApplyItemJoints")
+		p90:ApplyItemJointsTransform()
+		debug.profileend()
+	end
+	p90:ApplyArmJoints()
+end
+function v31.ShootBegin(p91, p92)
+	if p91.Config.FireAuto or l__TouchEnabled__3 and p91.Config.FireAutoMobile then
+		p91.IsShooting = true
+		return
+	end
+	p91:_attemptShoot()
+end
+function v31.ShootEnd(p93, p94)
+	if p93.IsShooting == true then
+		p93.IsShooting = false
+	end
+end
+function v31.ScopeBegin(p95)
+	if p95.IsLeaning then
+		return false
+	end
+	if v20.GetLocalVehiclePacket() then
+		return false
+	end
+	if p95.IsScoping then
+		return false
+	end
+	p95.SpringItemOffset:SetTarget(p95.Config.Motion.Scope.Springs.ItemOffset)
+	p95.SpringItemRotation:SetTarget(p95.Config.Motion.Scope.Springs.ItemRotation)
+	p95.SpringNeckRotation:SetTarget(p95.Config.Motion.Scope.Springs.NeckRotation)
+	if p95.Local then
+		v13.Zoom(p95.Config.Motion.Scope.FOV or 50)
+		p95.CrossHair:ADS(true)
+		if math.abs(u4 - 1) > 0.001 then
+			v13.setSensitivity(u4)
+		end
+	end
+	p95.IsScoping = true
+	return true
+end
+function v31.ScopeEnd(p96)
+	if p96.IsLeaning then
+		return false
+	end
+	if not p96.IsScoping then
+		return false
+	end
+	p96.SpringItemOffset:SetTarget(p96.Config.Motion.Hip.Springs.ItemOffset)
+	p96.SpringItemRotation:SetTarget(p96.Config.Motion.Hip.Springs.ItemRotation)
+	p96.SpringNeckRotation:SetTarget(p96.Config.Motion.Hip.Springs.NeckRotation)
+	if p96.Local then
+		v13.Zoom(70)
+		p96.CrossHair:ADS(false)
+		v13.setSensitivity(1)
+	end
+	p96.IsScoping = false
+	return true
+end
+function v31.SetLeaning(p97, p98, p99)
+	p97.IsLeaning = p98
+	p97.IsLeaningRight = p99
+	if p97.IsLeaning then
+		if p97.IsLeaningRight == true then
+			p97.SpringItemOffset:SetTarget(Vector3.new(0.9, 1, -1.9))
+			p97.SpringItemRotation:SetTarget(Vector3.new(0.2, 0, 0.6))
+			p97.SpringNeckRotation:SetTarget(Vector3.new(0, 0, -0.5))
+		else
+			p97.SpringItemOffset:SetTarget(Vector3.new(-0.6, 1, -1.9))
+			p97.SpringItemRotation:SetTarget(Vector3.new(0.2, 0, -0.6))
+			p97.SpringNeckRotation:SetTarget(Vector3.new(0, 0, 0.5))
+		end
+	else
+		p97.SpringItemOffset:SetTarget(p97.Config.Motion.Hip.Springs.ItemOffset)
+		p97.SpringItemRotation:SetTarget(p97.Config.Motion.Hip.Springs.ItemRotation)
+		p97.SpringNeckRotation:SetTarget(p97.Config.Motion.Hip.Springs.NeckRotation)
+	end
+	if p97.Local then
+		u3:FireServer("fz91jnci", p98, p99)
+	end
+end
+function v31.InputBegan(p100, p101, p102)
+	if p102 then
+		return false
+	end
+	local v118 = true
+	if p101.UserInputType ~= Enum.UserInputType.MouseButton1 then
+		v118 = false
+		if p101.UserInputType == Enum.UserInputType.Gamepad1 then
+			v118 = p101.KeyCode == Enum.KeyCode.ButtonR2
+		end
+	else
+		v118 = true
+	end
+	local v119 = true
+	if p101.UserInputType == Enum.UserInputType.Keyboard then
+		if p101.KeyCode ~= Enum.KeyCode.R then
+			v119 = false
+			if p101.UserInputType == Enum.UserInputType.Gamepad1 then
+				v119 = p101.KeyCode == Enum.KeyCode.ButtonX
+			end
+		end
+	else
+		v119 = true
+		if p101.UserInputType == Enum.UserInputType.Gamepad1 then
+			v119 = p101.KeyCode == Enum.KeyCode.ButtonX
+		end
+	end
+	local v120 = false
+	if p101.UserInputType == Enum.UserInputType.Keyboard then
+		v120 = p101.KeyCode == Enum.KeyCode.V
+	end
+	local v121 = true
+	if type(p101) == "table" then
+		v121 = true
+		if p101.FlagToggleSkins == nil then
+			v121 = false
+			if p101.UserInputType == Enum.UserInputType.Gamepad1 then
+				v121 = p101.KeyCode == Enum.KeyCode.ButtonY
+			end
+		end
+	else
+		v121 = false
+		if p101.UserInputType == Enum.UserInputType.Gamepad1 then
+			v121 = p101.KeyCode == Enum.KeyCode.ButtonY
+		end
+	end
+	if v118 then
+		p100:ShootBegin(p101)
+		return
+	end
+	if p101.UserInputType == Enum.UserInputType.MouseButton2 then
+		p100:ScopeBegin()
+		if p100.Local then
+			p100:BroadcastInputBegan(p101)
+			return
+		end
+	elseif v119 then
+		p100:Reload()
+		if p100.Local then
+			p100:BroadcastInputBegan(p101)
+			return
+		end
+	elseif v120 then
+		if v18.IsOpen == false then
+			v29.InputBegan(p100, p101, p102)
+			return
+		end
+	elseif v121 then
+		if v18.IsOpen == false then
+			v18.Open()
+			p100.CrossHair:Disable()
+			if v13.Locked == true then
+				v13.setLocked(false)
+				p100.Maid.undoCameraLock = function()
+					v13.setLocked(true)
+				end
+				return
+			end
+		else
+			v18.Close()
+			p100.CrossHair:Enable()
+			p100.Maid.undoCameraLock = nil
+		end
+	end
+end
+function v31.InputEnded(p103, p104, p105)
+	if p105 then
+		return false
+	end
+	local v122 = true
+	if p104.UserInputType ~= Enum.UserInputType.MouseButton1 then
+		v122 = false
+		if p104.UserInputType == Enum.UserInputType.Gamepad1 then
+			v122 = p104.KeyCode == Enum.KeyCode.ButtonR2
+		end
+	end
+	if v122 then
+		p103:ShootEnd(p104)
+		return
+	end
+	if p104.UserInputType == Enum.UserInputType.MouseButton2 then
+		p103:ScopeEnd()
+		if p103.Local then
+			p103:BroadcastInputEnded(p104)
+		end
+	end
+end
+function v31.SetThirdMousePosition(p106, p107)
+	p106.SpringThirdMousePosition:SetTarget(p107)
+end
+function v31._getUncachedViewDist(p108)
+	local v123 = nil
+	local l__Character__124 = l__Players__1.LocalPlayer.Character
+	if l__Character__124 then
+		v123 = l__Character__124.PrimaryPart
+		if not v123 then
+			return math.huge
+		end
+	else
+		return math.huge
+	end
+	return (p108.RootPart.Position - v123.Position).Magnitude
+end
+function v31._getViewDist(p109)
+	local v125 = os.clock()
+	if not (v125 - p109._lastUpdateViewDist > 0.1) then
+		return p109._viewDist
+	end
+	p109._lastUpdateViewDist = v125
+	local v126 = p109:_getUncachedViewDist()
+	p109._viewDist = v126
+	return v126
+end
+function v31._getUpdateRate(p110, p111)
+	if not p110.Model:IsDescendantOf(workspace) then
+		return 1
+	end
+	p111 = p111 or 32
+	local v127 = p110:_getViewDist()
+	if v127 < p111 then
+		return 0
+	end
+	return (v127 - p111) / (512 - p111)
+end
+function v31.Equip(p112)
+	local v128 = nil
+	p112:RenderStepped()
+	p112:Stepped()
+	v128 = 0
+	if p112.Local then
+		local u12 = v128
+		p112.Maid:GiveTask(l__RunService__4.RenderStepped:Connect(function()
+			if not p112.Destroyed then
+				local v129 = os.clock()
+				if p112:_getUpdateRate() < v129 - u12 then
+					u12 = v129
+					debug.profilebegin("Gun RenderStepped")
+					p112:RenderStepped()
+					debug.profileend()
+				end
+			end
+		end))
+	else
+		local u13 = v128
+		p112.Maid:GiveTask(l__RunService__4.Heartbeat:Connect(function()
+			if not p112.Destroyed then
+				local v130 = os.clock()
+				if p112:_getUpdateRate() < v130 - u13 then
+					u13 = v130
+					debug.profilebegin("Gun RenderStepped")
+					p112:RenderStepped()
+					debug.profileend()
+				end
+			end
+		end))
+	end
+	local u14 = 0
+	p112.Maid:GiveTask(l__RunService__4.Stepped:Connect(function()
+		if not p112.Destroyed then
+			local v131 = os.clock()
+			local v132 = p112:_getUpdateRate(192)
+			if p112.Local or p112.SimulateLocal then
+				v132 = 0
+			end
+			if v132 < v131 - u14 then
+				u14 = v131
+				debug.profilebegin("Gun Stepped")
+				p112:Stepped()
+				debug.profileend()
+			end
+		end
+	end))
+	if p112.Heartbeat then
+		p112.Maid:GiveTask(l__RunService__4.Heartbeat:Connect(function()
+			if not p112.Destroyed then
+				debug.profilebegin("Gun Heartbeat")
+				p112:Heartbeat()
+				debug.profileend()
+			end
+		end))
+	end
+end
+local l__CurrentCamera__15 = workspace.CurrentCamera
+function v31.Unequip(p113)
+	if p113.IsLeaning then
+		p113:SetLeaning(false)
+	end
+	if p113.IsScoping then
+		p113:ScopeEnd()
+		l__CurrentCamera__15.FieldOfView = 70
+	end
+	if p113.Local and v18.IsOpen == true then
+		v18.Close()
+	end
+end
+function v31.Destroy(p114)
+	p114:Unequip()
+	v29.Destroy(p114)
+end
+return v31
