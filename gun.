@@ -1,0 +1,4 @@
+
+return require(game:GetService("ReplicatedStorage").Std.TableUtils).requireValidIndex({
+	ITEMS_VALUE_NAME = "Items"
+});
