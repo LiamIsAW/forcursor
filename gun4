@@ -1,0 +1,58 @@
+-- Decompiled with the Synapse X Luau decompiler.
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local u1 = require(l__ReplicatedStorage__1.Std.waitForChild);
+local l__LocalPlayer__2 = game:GetService("Players").LocalPlayer;
+local u3 = require(script.Parent.GunShopConsts);
+local u4 = {
+	onAnyOwned = require(l__ReplicatedStorage__1.Std.Signal).new(), 
+	itemsValue = nil
+};
+local Region = require(l__ReplicatedStorage__1.Std.Region);
+local u6 = require(l__ReplicatedStorage__1.Std.Region.RegionUtils);
+local CollectionService = game:GetService("CollectionService");
+local l__RunService__8 = game:GetService("RunService");
+function u4.init()
+	u1(l__LocalPlayer__2, u3.ITEMS_VALUE_NAME):andThen(function(p1)
+		u4.itemsValue = p1;
+		p1.ChildAdded:Connect(function(p2)
+			u4.onAnyOwned:Fire(p2.Name);
+		end);
+	end):catch(warn);
+	local GunShopRegion = Region.new(u6.ConditionPlayer);
+	local GunShopUI = require(script.Parent.GunShopUI);
+	GunShopRegion.OnObjAdded:Connect(function()
+		if not GunShopUI.isOpen() then
+			GunShopUI.open();
+		end;
+	end);
+	GunShopRegion.OnObjRemoved:Connect(function()
+		if GunShopUI.isOpen() then
+			GunShopUI.close();
+		end;
+	end);
+	local function v3()
+		GunShopRegion.Prisms = {};
+
+		for _, v5 in ipairs(CollectionService:GetTagged("GunShopRegion")) do
+			GunShopRegion:AddPart(v5);		
+		end
+
+	end;
+	v3();
+	CollectionService:GetInstanceAddedSignal("GunShopRegion"):Connect(v3);
+	CollectionService:GetInstanceRemovedSignal("GunShopRegion"):Connect(v3);
+	local u10 = tick();
+	l__RunService__8.Heartbeat:Connect(function()
+		local v7 = tick();
+		if v7 - u10 < 0.5 then
+			return;
+		end;
+		u10 = v7;
+		GunShopRegion:Update({ l__LocalPlayer__2 }, true);
+	end);
+end;
+function u4.doesPlayerOwn(p3)
+	return l__LocalPlayer__2:WaitForChild(u3.ITEMS_VALUE_NAME):FindFirstChild(p3) ~= nil;
+end;
+return u4;
