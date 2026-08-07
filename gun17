@@ -1,0 +1,31 @@
+
+
+local l__Players__1 = game:GetService("Players");
+local u2 = {};
+local u3 = require(game:GetService("ReplicatedStorage").EzUi.Utils);
+function u2.init()
+	local l__HotbarGui__1 = script.Parent.Res.HotbarGui;
+	l__HotbarGui__1.Parent = l__Players__1.LocalPlayer.PlayerGui;
+	l__HotbarGui__1.DisplayOrder = 11;
+	u2.gui = l__HotbarGui__1;
+	local v2 = l__HotbarGui__1.Container.Item:Clone();
+	l__HotbarGui__1.Container.Item:Destroy();
+	u2.presetFrame = v2;
+	local function v3()
+		if u3.isSmallScreen() then
+			l__HotbarGui__1.Container.Size = UDim2.new(0.7, 0, 1, 0);
+			l__HotbarGui__1.UIPadding.PaddingBottom = UDim.new(0.01, 0);
+			return;
+		end;
+		if u3.shouldHaveTouchControls() then
+			l__HotbarGui__1.Container.Size = UDim2.new(0.7, 0, 1, 0);
+			l__HotbarGui__1.UIPadding.PaddingBottom = UDim.new(0.01, 0);
+			return;
+		end;
+		l__HotbarGui__1.Container.Size = UDim2.new(0.4, 0, 1, 0);
+		l__HotbarGui__1.UIPadding.PaddingBottom = UDim.new(0.01, 0);
+	end;
+	u3.getViewportSizeChangedSignal():Connect(v3);
+	v3();
+end;
+return u2;
