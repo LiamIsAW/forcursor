@@ -1,0 +1,245 @@
+
+
+local l__UserInputService__1 = game:GetService("UserInputService");
+local l__GuiService__2 = game:GetService("GuiService");
+local l__Players__3 = game:GetService("Players");
+local l__ReplicatedStorage__4 = game:GetService("ReplicatedStorage");
+local v5 = require(l__ReplicatedStorage__4.Std.Audio);
+local v6 = require(l__ReplicatedStorage__4.App.RunUtils);
+local v7 = require(l__ReplicatedStorage__4.Std.Signal);
+local v8 = require(l__ReplicatedStorage__4.EzUi.Utils);
+local v9 = require(l__ReplicatedStorage__4.Roact);
+local v10 = require(l__ReplicatedStorage__4.Policy.PolicyService);
+local v11 = require(l__ReplicatedStorage__4.Game.Level2.LevelUISystem);
+local v12 = require(l__ReplicatedStorage__4.Module.Confirmation);
+local v13 = require(l__ReplicatedStorage__4.Game.Vehicle);
+local v14 = require(l__ReplicatedStorage__4.App.TeamUtils);
+local v15 = require(l__ReplicatedStorage__4.Game.Gamepass.GamepassSystem);
+local v16 = require(l__ReplicatedStorage__4.Game.Gamepass.GamepassUtils);
+local v17 = require(l__ReplicatedStorage__4.App.RunConsts);
+local v18 = require(l__ReplicatedStorage__4.WorldTeleport.WorldTeleportConsts);
+local v19 = require(l__ReplicatedStorage__4.App.store);
+local v20 = require(l__ReplicatedStorage__4.App.BigButtonService);
+local v21 = {
+	onDevPanelToggle = v7.new(), 
+	onGarageToggle = v7.new(),
+	safesButton = nil
+};
+local v22, v23 = v9.createBinding("4:00 PM");
+v21.time = v22;
+v21.updateTime = v23;
+local l__LocalPlayer__1 = l__Players__3.LocalPlayer;
+function v21.Init(p1)
+	local v24 = require(l__ReplicatedStorage__4.Game.CashBuyUI);
+	local v25 = v9.createRef();
+	local v26 = {
+		name = "Garage", 
+		imageId = 8733342027, 
+		displayOrder = 10, 
+		ref = v25
+	};
+	local l__em__2 = p1.em;
+	function v26.onClick()
+		local v27 = v13.GetLocalVehiclePacket();
+		if v27 then
+			if v27.Passenger then
+				l__em__2.yzczkwdf({
+					Title = "Garage", 
+					Text = "Cannot customize as passenger."
+				});
+				return false;
+			end;
+			if v27.Model:FindFirstChild("DisableGarage") then
+				l__em__2.yzczkwdf({
+					Text = "Garage disabled on this vehicle."
+				});
+				return false;
+			end;
+		end;
+		v21.onGarageToggle:Fire();
+	end;
+	v20.add(v26);
+	if v14.isTeamSwitchingEnabled() then
+		local v28 = {
+			name = "TeamSwitch", 
+			imageId = 4912231691, 
+			displayOrder = 20
+		};
+		local u3 = nil;
+		local l__Event__4 = p1.Event;
+		function v28.onClick()
+			if u3 ~= nil then
+				u3:Destroy();
+				u3 = nil;
+				return;
+			end;
+			u3 = v12.new("Are you sure you want to switch teams?");
+			u3.OnYes:Connect(function()
+				u3 = nil;
+				l__Event__4:FireServer("lzve31di");
+			end);
+			u3.OnNo:Connect(function()
+				u3 = nil;
+			end);
+		end;
+		v20.add(v28);
+	end;
+	local v29 = {
+		name = "Cash", 
+		imageId = 4912231216, 
+		displayOrder = 30
+	};
+	function v29.onClick()
+		if v24.IsOpen == false then
+			v24.Open();
+			return;
+		end;
+		v24.Close();
+	end;
+	v20.add(v29);
+	--v10.promiseCachedPlayerPolicyInfo(l__Players__3.LocalPlayer):andThen(function(p2)
+		--if p2.ArePaidRandomItemsRestricted == false then
+			v21.safesButton = {
+				name = "Safes", 
+				imageId = 10313420284, 
+				imageScale = 0.9, 
+				displayOrder = 40, 
+				onClick = function()
+					if l__Players__3.LocalPlayer.PlayerGui then
+						v5.ObjectLocal(l__Players__3.LocalPlayer.PlayerGui, 6105461542, {
+							Volume = 0.15
+						});
+					end;
+					v19:dispatch({
+						type = "toggleSafesOpen"
+					});
+				end
+			};
+			v20.add(v21.safesButton);
+		--end;
+	--end);
+	v21.settingsButton = {
+		name = "Settings", 
+		imageId = 8733343021, 
+		displayOrder = 50, 
+		onClick = function()
+			v21.onDevPanelToggle:Fire();
+		end
+	};
+	v20.add(v21.settingsButton);
+	if v6.isMainWorld() then
+		v20.add({
+			name = "Season", 
+			imageId = 6132976621, 
+			displayOrder = 60, 
+			onClick = function()
+				v11.toggleInfo();
+			end
+		});
+	elseif v6.isTradeWorld() then
+		v20.add({
+			name = "Trade", 
+			imageId = 9857392770, 
+			displayOrder = 60, 
+			onClick = function()
+				if l__Players__3.LocalPlayer.PlayerGui then
+					v5.ObjectLocal(l__Players__3.LocalPlayer.PlayerGui, 6105461542, {
+						Volume = 0.15
+					});
+				end;
+				v19:dispatch({
+					type = "setTradeInventoryOpen", 
+					value = not v19:getState().tradeInventoryOpen
+				});
+			end
+		});
+	end;
+	if v6.isTradeWorld() then
+		local u5 = {
+			name = "GoHome", 
+			displayOrder = 70, 
+			onClick = function()
+				if l__Players__3.LocalPlayer.PlayerGui then
+					v5.ObjectLocal(l__Players__3.LocalPlayer.PlayerGui, 6105461542, {
+						Volume = 0.15
+					});
+				end;
+				if not v15.DoesPlayerOwn(v16.EnumGamepass.TradingVIP) then
+					v16.PromptGamepass(v16.EnumGamepass.TradingVIP);
+					return;
+				end;
+				l__ReplicatedStorage__4:FindFirstChild(v18.TELEPORT_TO_WORLD_FROM_TEAM_SWITCH_NAME):FireServer(v17.MAIN_WORLD_NAME);
+			end
+		};
+		local v30
+		local v31
+		if v15.DoesPlayerOwn(v16.EnumGamepass.TradingVIP) then
+			v30 = 10087230550;
+		else
+			v30 = 10087230159;
+		end;
+		u5.imageId = v30;
+		v20.add(u5);
+		v15.GetGamepassOwnedSignal(v16.EnumGamepass.TradingVIP):Connect(function()
+			if v15.DoesPlayerOwn(v16.EnumGamepass.TradingVIP) then
+				local v31 = 10087230550;
+			else
+				v31 = 10087230159;
+			end;
+			u5.imageId = v31;
+			v20.triggerUpdate:Fire();
+		end);
+	end;
+	local u6 = require(l__ReplicatedStorage__4.Game.GameUtil);
+	function l__em__2.vrwpc9lc(p3)
+		if p3 ~= "Criminal" then
+			u6.bounty = 0;
+			u6.onBountyChanged:Fire(u6.bounty);
+		end;
+	end;
+	function l__em__2.mfswdilc(p4)
+		u6.bounty = p4;
+		u6.onBountyChanged:Fire(u6.bounty);
+	end;
+	v21.SetSafeCount(10);
+	v19.changed:connect(function(p5, p6)
+		if p5.safesInventoryItems ~= p6.safesInventoryItems then
+			v21.SetSafeCount(#p5.safesInventoryItems);
+		end;
+	end);
+	l__UserInputService__1.InputBegan:Connect(function(p7)
+		if p7.UserInputType == Enum.UserInputType.Gamepad1 and p7.KeyCode == Enum.KeyCode.ButtonSelect and l__GuiService__2.SelectedObject ~= nil then
+			v8.selectIfGamepad(v25:getValue());
+		end;
+	end);
+	local v32 = require(l__ReplicatedStorage__4.Game.Home.Crew.CrewUtils);
+	local v33 = {
+		name = "Crew", 
+		imageId = 6598946726, 
+		displayOrder = 80, 
+		enabled = false
+	};
+	local u7 = require(l__ReplicatedStorage__4.Game.Home.Crew.CrewUISystem);
+	function v33.onClick()
+		if u7.isOpen() then
+			u7.close();
+			return;
+		end;
+		u7.open();
+	end;
+	v20.add(v33);
+	v32.getAssignedCrewValue(l__LocalPlayer__1).Changed:Connect(function()
+		v33.enabled = v32.getAssignedCrew(l__LocalPlayer__1) ~= nil;
+		v20.triggerUpdate:Fire();
+	end);
+end;
+function v21.SetTime(p8)
+	v21.updateTime(p8);
+end;
+function v21.SetSafeCount(p9)
+	if v21.safesButton then
+		v21.safesButton.count = p9;
+		v20.triggerUpdate:Fire();
+	end;
+end;
+return v21;
