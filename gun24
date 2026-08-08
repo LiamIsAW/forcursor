@@ -1,0 +1,87 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = {};
+v2.__index = v2;
+local u1 = require(l__ReplicatedStorage__1.Std.Maid);
+local u2 = require(l__ReplicatedStorage__1.Std.Signal);
+local u3 = require(l__ReplicatedStorage__1.Std.RxInstanceUtils);
+local u4 = require(script.Parent.InventoryItemConsts);
+function v2.new(p1)
+	local v3 = {};
+	setmetatable(v3, v2);
+	v3.obj = p1;
+	v3._maid = u1.new();
+	v3.onAttemptSelect = u2.new();
+	v3._maid:GiveTask(v3.onAttemptSelect);
+	v3.onAttemptDrop = u2.new();
+	v3._maid:GiveTask(v3.onAttemptDrop);
+	v3._maid:GiveTask(u3.observeOneChildNamed(p1, u4.EQUIP_REMOTE_NAME, function(p2, p3)
+		p3:GiveTask(p2.OnClientEvent:Connect(function()
+			v3:AttemptSelect();
+		end));
+	end));
+	v3._overriddenOwner = nil;
+	return v3;
+end;
+local u5 = require(script.Parent.InventoryItemUtils);
+function v2.GetName(p4)
+	return u5.getName(p4.obj);
+end;
+local u6 = require(script.Parent.InventoryItemOwnerBinder);
+function v2.GetOwner(p5)
+	local l__Parent__4 = p5.obj.Parent.Parent;
+	if not l__Parent__4 then
+		return;
+	end;
+	local v5 = u6:Get(l__Parent__4);
+	if v5 then
+		return v5;
+	end;
+	if l__Parent__4.Parent ~= game:GetService("Players") then
+		return;
+	end;
+	return l__Parent__4;
+end;
+local u7 = require(l__ReplicatedStorage__1.Std.Promise);
+function v2.PromiseOwner(p6)
+	local l__Parent__6 = p6.obj.Parent.Parent;
+	if not l__Parent__6 then
+		return;
+	end;
+	if l__Parent__6.Parent == game:GetService("Players") then
+		return u7.resolve(l__Parent__6);
+	end;
+	return u6:Promise(l__Parent__6);
+end;
+function v2.GetAttr(p7, ...)
+	return u5.getAttr(p7.obj, ...);
+end;
+function v2.SetAttr(p8, ...)
+	u5.setAttr(p8.obj, ...);
+end;
+function v2.GetEquipped(p9, ...)
+	return u5.getEquipped(p9.obj, ...);
+end;
+function v2.SetEquipped(p10, ...)
+	u5.setEquipped(p10.obj, ...);
+end;
+function v2.GetEquippedSignal(p11)
+	return u5.getEquippedSignal(p11.obj);
+end;
+function v2.AttemptSetEquipped(p12, p13)
+	assert(p13 ~= nil, "missing value");
+	u5.setEquipped(p12.obj, p13);
+	p12.obj:FindFirstChild(u4.EQUIP_REMOTE_NAME):FireServer(p13);
+end;
+function v2.AttemptSelect(p14)
+	p14.onAttemptSelect:Fire();
+end;
+function v2.AttemptDrop(p15)
+	p15.onAttemptDrop:Fire();
+end;
+function v2.Destroy(p16)
+	p16._maid:Destroy();
+	setmetatable(p16, nil);
+end;
+return v2;
