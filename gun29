@@ -1,0 +1,59 @@
+
+local v1 = {};
+local l__CollectionService__1 = game:GetService("CollectionService");
+local u2 = require(script.Parent.InventoryItemConsts);
+function v1.getEquipped(p1)
+	assert(l__CollectionService__1:HasTag(p1, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	return p1:GetAttribute(u2.EQUIPPED_ATTR_NAME);
+end;
+function v1.setEquipped(p2, p3)
+	assert(l__CollectionService__1:HasTag(p2, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	assert(typeof(p3) == "boolean", "value must be a boolean");
+	p2:SetAttribute(u2.EQUIPPED_ATTR_NAME, p3);
+end;
+function v1.getEquippedSignal(p4)
+	assert(l__CollectionService__1:HasTag(p4, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	return p4:GetAttributeChangedSignal(u2.EQUIPPED_ATTR_NAME);
+end;
+function v1.getLocked(p5)
+	assert(l__CollectionService__1:HasTag(p5, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	return p5:GetAttribute(u2.LOCKED_ATTR_NAME);
+end;
+function v1.setLocked(p6, p7)
+	assert(l__CollectionService__1:HasTag(p6, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	assert(typeof(p7) == "boolean", "value must be a boolean");
+	p6:SetAttribute(u2.LOCKED_ATTR_NAME, p7);
+end;
+function v1.getPriority(p8)
+	assert(l__CollectionService__1:HasTag(p8, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	return p8:GetAttribute(u2.PRIORITY_ATTR_NAME);
+end;
+function v1.setPriority(p9, p10)
+	assert(l__CollectionService__1:HasTag(p9, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	assert(typeof(p10) == "number", "value must be a number");
+	p9:SetAttribute(u2.PRIORITY_ATTR_NAME, p10);
+end;
+function v1.getName(p11)
+	assert(l__CollectionService__1:HasTag(p11, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	return p11.Name;
+end;
+function v1.setName(p12, p13)
+	assert(l__CollectionService__1:HasTag(p12, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	assert(typeof(p13) == "string", "value must be a string");
+	p12.Name = p13;
+end;
+function v1.getAttr(p14, p15)
+	return p14:GetAttribute(p15);
+end;
+function v1.setAttr(p16, p17, p18)
+	p16:SetAttribute(p17, p18);
+end;
+function v1.getOwner(p19)
+	assert(l__CollectionService__1:HasTag(p19, u2.TAG_NAME), "provided inventoryItemValue is not a InventoryItem");
+	local l__Parent__2 = p19.Parent.Parent;
+	if l__Parent__2.Parent == game:GetService("Players") then
+		return l__Parent__2;
+	end;
+	return nil;
+end;
+return v1;
