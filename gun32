@@ -1,0 +1,4329 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunUtils = require(ReplicatedStorage.App.RunUtils)
+local MarketplaceService = game:GetService("MarketplaceService")
+local RunService = game:GetService("RunService")
+local isStudio = RunUtils.isStudio()
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
+local SoundService = game:GetService("SoundService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local R15IKv2 = require(ReplicatedStorage.Module.R15IKv2)
+local ModuleUI = require(ReplicatedStorage.Module.UI)
+local CollectionService = game:GetService("CollectionService")
+local Joint = require(ReplicatedStorage.Std.Joint)
+local Math = require(ReplicatedStorage.Module.Math)
+local AlexParticles = require(ReplicatedStorage.Module.AlexParticles)
+local AlexWM = require(ReplicatedStorage.Module.AlexWM)
+local Settings = require(ReplicatedStorage.Resource.Settings)
+local StarterGui = game:GetService("StarterGui")
+local ChinaPolicyService = require(ReplicatedStorage.Resource.ChinaPolicyService)
+local Localization = require(ReplicatedStorage.Module.Localization)
+local Audio = require(ReplicatedStorage.Std.Audio)
+local GameUtil = require(ReplicatedStorage.Game.GameUtil)
+local RunConsts = require(ReplicatedStorage.App.RunConsts)
+local RxInstanceUtils = require(ReplicatedStorage.Std.RxInstanceUtils)
+local Binder = require(ReplicatedStorage.Std.Binder)
+local BinderUtils = require(ReplicatedStorage.Std.Binder.BinderUtils)
+local Maid = require(ReplicatedStorage.Std.Maid)
+local waitForChild = require(ReplicatedStorage.Std.waitForChild)
+local GameSettingsService = require(ReplicatedStorage.GameSettings.GameSettingsService)
+local gameSettingType = require(ReplicatedStorage.GameSettings.gameSettingType)
+local TradeService = require(ReplicatedStorage.Trade.TradeService)
+local Handcuffs = require(ReplicatedStorage.Game.ItemConfig.Handcuffs)
+local TradeUtils = require(ReplicatedStorage.Trade.TradeUtils)
+--local CFrameZero = CFrame.new(0, 0, 0)
+--local VectorZero = Vector3.new(0, 0, 0)
+if not RunUtils.isStudio() then
+	print("Build:", "23 Dec @ 11:16 PM @6da3d0e")
+end
+--for i = 1, 10 do
+--	local v38 = Instance.new("RemoteEvent")
+--	v38.Name = Math.GUID()
+--	v38.Parent = ReplicatedStorage.Resource
+--end
+RemoteEvent = {}
+u3 = nil
+local events = {}
+for _, RandomEvent in next, ReplicatedStorage.Resource:GetChildren() do
+	if RandomEvent:IsA("RemoteEvent") then
+		RandomEvent.Name = Math.GUID()
+		table.insert(events, RandomEvent)
+	end
+end
+local function GetRandomEvent()
+	return events[math.random(1, #events)]
+end
+function NewFireServer(Value, ...)
+	local EventToFire = GetRandomEvent()
+	EventToFire:FireServer(Value, ...)
+end
+function RemoteEvent:FireServer(Value, ...)
+	return NewFireServer(Value, ...)
+end
+local function SetEvent(eventName, ...)
+	assert(em[eventName], eventName)(...)
+end
+function EventInit()
+	for _, Event in next, events, nil do
+		Event.OnClientEvent:Connect(SetEvent)
+	end
+end
+
+em = {}
+em.wypzouxt = function(p4)
+	em.hems = true
+	u3 = p4
+end
+
+_G.ClientEvent = RemoteEvent
+_G.ClientEm = em
+
+StarterGui.ResetPlayerGuiOnSpawn = false
+
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+PlayerTeamValue = LocalPlayer:WaitForChild("TeamValue")
+local MainGui = PlayerGui:FindFirstChild("MainGui")
+if not MainGui then
+	MainGui = ReplicatedStorage.StarterGui:FindFirstChild("MainGui"):Clone()
+	MainGui.Parent = PlayerGui
+end
+local ProductGui = PlayerGui:FindFirstChild("ProductGui")
+if not ProductGui then
+	ProductGui = ReplicatedStorage.StarterGui:FindFirstChild("ProductGui"):Clone()
+	ProductGui.Parent = PlayerGui
+end
+local Particles = PlayerGui:FindFirstChild("Particles")
+if not Particles then
+	Particles = ReplicatedStorage.StarterGui:FindFirstChild("Particles"):Clone()
+	Particles.Parent = PlayerGui
+end
+local DeathGui = PlayerGui:FindFirstChild("DeathGui")
+if not DeathGui then
+	DeathGui = ReplicatedStorage.StarterGui:FindFirstChild("DeathGui"):Clone()
+	DeathGui.Parent = PlayerGui
+end
+ModuleUI.CircleAction.Frame = MainGui.CircleAction
+StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Backpack, false)
+local PlayerUtils = require(ReplicatedStorage.Game.PlayerUtils)
+PlayerUtils.init()
+local InventoryItemUtils = require(ReplicatedStorage.Inventory.InventoryItemUtils)
+local InventoryItemSystem = require(ReplicatedStorage.Inventory.InventoryItemSystem)
+local ItemSystem = require(ReplicatedStorage.Game.ItemSystem.ItemSystem)
+ItemSystem.Init({
+	em = em, 
+	Event = RemoteEvent
+})
+require(ReplicatedStorage.Game.AmmoGui).Init({
+	GetScreenGui = function(FrameName)
+		local AmmoScreen = PlayerGui:FindFirstChild(FrameName)
+		if not AmmoScreen then
+			AmmoScreen = ReplicatedStorage.StarterGui:FindFirstChild(FrameName):Clone()
+			AmmoScreen.Parent = PlayerGui
+		end
+		return AmmoScreen
+	end
+})
+require(ReplicatedStorage.Game.Item.Gun).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Rifle)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.AK47)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Pistol)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.NerfPistol)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.NerfRevolver)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Shotgun)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Uzi)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.RocketLauncher)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Grenade)))
+Sword = require(ReplicatedStorage.Game.Item.Sword)
+Sword.Init({
+	Event = RemoteEvent
+})
+ItemSystem.Register(Sword)
+Baton = require(ReplicatedStorage.Game.Item.Baton)
+Baton.Init({
+	Event = RemoteEvent
+})
+ItemSystem.Register(Baton)
+ForcefieldLauncher = require(ReplicatedStorage.Game.Item.ForcefieldLauncher)
+ForcefieldLauncher.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+ItemSystem.Register(ForcefieldLauncher)
+RoadSpike = require(ReplicatedStorage.Game.Item.RoadSpike)
+RoadSpike.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+ItemSystem.Register(RoadSpike)
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Turret)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Key)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.MansionInvite)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.CCTV)))
+Donut = require(ReplicatedStorage.Game.Item.Donut)
+Donut.Init({
+	Event = RemoteEvent
+})
+ItemSystem.Register(Donut)
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Cuffed)))
+Taser = require(ReplicatedStorage.Game.Item.Taser)
+Taser.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+ItemSystem.Register(Taser)
+Glider = require(ReplicatedStorage.Game.Item.Glider)
+Glider.Init({
+	Event = RemoteEvent
+})
+ItemSystem.Register(Glider)
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Crate)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Flashlight)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Handcuffs)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.ShieldSWAT)))
+Binoculars = require(ReplicatedStorage.Game.Item.Binoculars)
+Binoculars.Init({
+	ScreenGui = MainGui
+})
+ItemSystem.Register(Binoculars)
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Bag)))
+PlasmaPistol = require(ReplicatedStorage.Game.Item.PlasmaPistol)
+PlasmaPistol.Init({
+	Event = RemoteEvent
+})
+ItemSystem.Register(PlasmaPistol)
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Revolver)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Sniper)))
+ItemSystem.Register((require(ReplicatedStorage.Game.Item.Flintlock)))
+require(ReplicatedStorage.Game.ItemSystem.ItemCamera).Init()
+require(ReplicatedStorage.Game.ItemSkin.ItemSkin).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.ItemSkin.UI.UI).Init()
+C4 = require(ReplicatedStorage.Game.Item.C4)
+C4.Init({
+	Event = RemoteEvent
+})
+ItemSystem.Register(C4)
+SmokeGrenade = require(ReplicatedStorage.Game.Item.SmokeGrenade)
+SmokeGrenade.Init({
+	Event = RemoteEvent
+})
+ItemSystem.Register(SmokeGrenade)
+ItemSystem.Register(require(ReplicatedStorage.Game.Item.Gem))
+Juice = require(ReplicatedStorage.Game.Item.Juice)
+Juice.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+ItemSystem.Register(Juice)
+PoliceReportUI = require(ReplicatedStorage.Game.PoliceReportUI.PoliceReportUI)
+PoliceReportUI.Init()
+function em.ig4yl4ye(Enabled)
+	PoliceReportUI.Display(Enabled)
+end
+local Threads = {}
+local LastClockTime = os.clock()
+RunService.Heartbeat:Connect(function()
+	local CurrentTime = os.clock()
+	local NewClockTime = CurrentTime - LastClockTime
+	LastClockTime = CurrentTime
+	debug.profilebegin("Thread Loop")
+	for i = 1, #Threads do
+		local CurrentThread = Threads[i]
+		if CurrentThread.i < CurrentTime - CurrentThread.t then
+			CurrentThread.t = CurrentTime
+			CurrentThread.c(CurrentTime, NewClockTime)
+		end
+	end
+	debug.profileend()
+end)
+
+local MainWindowGroup = AlexWM.MakeWindowGroup()
+local CharacterUtil = require(ReplicatedStorage.Game.CharacterUtil)
+require(ReplicatedStorage.Inventory.InventorySystem).init()
+local HotbarSystem = require(ReplicatedStorage.Hotbar.HotbarSystem)
+HotbarSystem.init()
+
+GameUtil.OnTeamChanged:Connect(function(p9)
+	HotbarSystem.setColor(Settings.TeamColor[p9])
+end)
+require(ReplicatedStorage.Hotbar.HotbarItemBinder):GetClassAddedSignal():Connect(function()
+	HotbarSystem.setColor(Settings.TeamColor[GameUtil.Team])
+end)
+BarbedWireClientBinder = Binder.new("BarbedWireClient", function(p10)
+	local BarbedMaid = Maid.new()
+	local CurrentT = 0
+	BarbedMaid:GiveTask(p10.Touched:Connect(function(p11)
+		local Character = LocalPlayer.Character
+		if not Character then
+			return
+		end
+		if p11.Parent ~= Character then
+			return
+		end
+		local Humanoid = Character:FindFirstChild("Humanoid")
+		if not Humanoid then
+			return
+		end
+		if Humanoid:GetLimb(p11) == Enum.Limb.Unknown then
+			return
+		end
+		local CurrentClock = os.clock()
+		if CurrentClock - CurrentT < 0.3 then
+			return
+		end
+		CurrentT = CurrentClock
+		local Damage = 30
+		local BarbedWireDamage = p10:GetAttribute("BarbedWireDamage")
+		if BarbedWireDamage then
+			assert(typeof(BarbedWireDamage) == "number")
+			Damage = BarbedWireDamage
+		end
+		RemoteEvent:FireServer("eptfb1xz", Damage)
+	end))
+	return BarbedMaid
+end):Start()
+
+local AudioPitchData = {}
+GameUtil.Schedule = "Yard"
+local PlayerDataStored = {
+	MainWindowGroup = MainWindowGroup, 
+	ScreenGui = MainGui, 
+	ProductGui = ProductGui, 
+	Event = RemoteEvent, 
+	em = em, 
+	UI = ModuleUI, 
+	SelectIfGamepad = function(p12)
+		if Enum.UserInputType.Gamepad1 == nil then
+			GuiService.SelectedObject = p12
+		end
+	end
+}
+local CurrentPacket = nil
+function PlayerDataStored.GetVehiclePacket()
+	return CurrentPacket
+end
+local VehicleModule = require(ReplicatedStorage.Game.Vehicle)
+VehicleModule.Init({
+	GetVehiclePacket = PlayerDataStored.GetVehiclePacket, 
+	em = em, 
+	Event = RemoteEvent
+})
+local Classes = VehicleModule.Classes
+Classes.Chassis = require(ReplicatedStorage.Module.AlexChassis)
+Classes.Chassis.init({
+	ScreenGui = MainGui
+})
+Classes.Chassis.SetEvent(RemoteEvent)
+Classes.Chassis2 = require(ReplicatedStorage.Module.AlexChassis2)
+Classes.Chassis2.SetEvent(RemoteEvent)
+Classes.Volt = require(ReplicatedStorage.Game.Vehicle.Volt)
+Classes.Volt.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+Classes.Tank = require(ReplicatedStorage.Tank.TankService)
+Classes.Tank.init()
+require(ReplicatedStorage.Module.RoundedBackingBuilder).new():Create(ProductGui.Gamepass.ContainerFrame)
+local OwnGamepassIndex = 0
+function GamepassPrompt(p13, p14, p15)
+	OwnGamepassIndex = OwnGamepassIndex + 1
+	ProductGui.Gamepass.Visible = false
+end
+MarketplaceService.PromptGamePassPurchaseFinished:Connect(GamepassPrompt)
+MarketplaceService.PromptPurchaseFinished:Connect(GamepassPrompt)
+function PromptPurchase(Gamepass)
+	local v82 = OwnGamepassIndex + 1
+	OwnGamepassIndex = v82
+	if Gamepass.OldPassId then
+		MarketplaceService:PromptPurchase(LocalPlayer, Gamepass.OldPassId)
+	else
+		MarketplaceService:PromptGamePassPurchase(LocalPlayer, Gamepass.PassId)
+	end
+	ProductGui.Gamepass.ContainerFrame.TextLabel.Text = Gamepass.Text
+	delay(0.2, function()
+		if OwnGamepassIndex ~= v82 then
+			return
+		end
+		ProductGui.Gamepass.Visible = true
+	end)
+end
+function em.vmbz6wds(p17)
+	PromptPurchase(p17)
+end
+GamepassSystem = require(ReplicatedStorage.Game.Gamepass.GamepassSystem)
+GamepassSystem.Init()
+GamepassUtils = require(ReplicatedStorage.Game.Gamepass.GamepassUtils)
+GamepassUtils.Init({
+	PromptPurchase = PromptPurchase
+})
+PlayerDataStored.PromptPurchase = PromptPurchase
+Notification = require(ReplicatedStorage.Game.Notification)
+Notification.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+SidebarUI = require(ReplicatedStorage.Game.SidebarUI)
+SidebarUI.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+local DefaultActions = require(ReplicatedStorage.Game.DefaultActions)
+require(ReplicatedStorage.CmdrExt.CmdrExtSystem).init()
+local TimeModule = require(ReplicatedStorage.Module.Time)
+TimeModule.Init()
+require(ReplicatedStorage.Module.Confirmation).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.DisplayDamage).init()
+require(ReplicatedStorage.Game.CharacterAnim).init()
+require(ReplicatedStorage.Module.NetSync).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.OwnedPart.OwnedPartSystem).init()
+require(ReplicatedStorage.Game.TrainSystem).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.TrackSwitch).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+Classes.Heli = require(ReplicatedStorage.Game.Vehicle.Heli)(PlayerDataStored)
+require(ReplicatedStorage.Game.Museum)(PlayerDataStored)
+require(ReplicatedStorage.Game.L18n)({
+	ScreenGui = MainGui, 
+	ProductGui = ProductGui
+})
+require(ReplicatedStorage.Game.Level2.LevelSystem).init()
+require(ReplicatedStorage.Game.TurbineSystem).init()
+require(ReplicatedStorage.AirDrop.BriefcaseBinder):Start()
+require(ReplicatedStorage.Plane.PlaneBinder):Start()
+--require(ReplicatedStorage.Game.Hologram).Init({
+--	em = em
+--})
+require(ReplicatedStorage.Game.Codes).Init({
+	MainWindowGroup = MainWindowGroup, 
+	Event = RemoteEvent
+})
+require(ReplicatedStorage.Game.SecretBases).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Robbery.RobberyBank.RobberyBank).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Robbery.RobberyJewelry).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Robbery.RobberyCargoTrain).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Robbery.RobberyPassengerTrain).Init({
+	Event = RemoteEvent, 
+	em = em, 
+	ScreenGui = MainGui
+})
+require(ReplicatedStorage.Game.Robbery.RobberyCargoPlane).Init({
+	Event = RemoteEvent, 
+	em = em, 
+	Team = PlayerTeamValue,
+	ScreenGui = MainGui
+})
+require(ReplicatedStorage.Game.Cell).Init({
+	Event = RemoteEvent, 
+	em = em, 
+	ScreenGui = MainGui
+})
+require(ReplicatedStorage.Game.MilitaryIsland).Init()
+JetSki = require(ReplicatedStorage.Game.VehicleSystem.JetSki)
+require(ReplicatedStorage.Game.Plane.BaseUserControlledPlane).Init()
+JetSystem = require(ReplicatedStorage.Game.Plane.Jet)
+JetSystem.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+StuntSystem = require(ReplicatedStorage.Game.Plane.Stunt)
+VehicleSystem = require(ReplicatedStorage.Game.VehicleSystem)
+VehicleSystem.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+VehicleSystem.RegisterModule(JetSki)
+VehicleSystem.RegisterModule(JetSystem)
+VehicleSystem.RegisterModule(StuntSystem)
+function em.nfnz8ps1(LocalPlayer, MissileIndex)
+	local Packet, Model = VehicleSystem.GetVehiclePacket(LocalPlayer)
+	if Packet == nil then
+		error("No vehicle exists for LocalPlayer")
+	end
+	Packet:UpdateMissileUI(LocalPlayer, MissileIndex)
+end
+local Missile = require(ReplicatedStorage.Game.Missile)
+function em.it61s429(a, b, c, d)
+	Missile.LaunchMissile(a, b, c, d)
+end
+require(ReplicatedStorage.Game.Robbery.PuzzleFlow).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Robbery.PowerPlant.PowerPlant).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+v95 = require(ReplicatedStorage.Game.JetPack.JetPack)
+v95.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+v95.Signal.OnEquipped:Connect(function()
+	InventoryItemSystem.unequipAll()
+end)
+local Streetlights = require(ReplicatedStorage.Game.Streetlights)
+Streetlights.init()
+function em.f5pqe151()
+	Streetlights.Flicker()
+end
+function em.srw3sjxf(Enabled)
+	Streetlights.SetEnabled(Enabled)
+end
+require(ReplicatedStorage.App.MinimapService).init()
+require(ReplicatedStorage.Game.RoadSpikeSystem).Init({
+	Event = RemoteEvent
+})
+require(ReplicatedStorage.Game.WorldMarker.WorldMarkerSystem).init()
+require(ReplicatedStorage.Game.RobberyMarkerSystem).init()
+require(ReplicatedStorage.Game.LightningSystem).Init({
+	em = em
+})
+require(ReplicatedStorage.Game.April2020LiveEventLoader).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Boat.Boat).Init()
+VehicleSystem.RegisterModule((require(ReplicatedStorage.Game.Boat.Sloop)))
+VehicleSystem.RegisterModule((require(ReplicatedStorage.Game.Boat.Cruiser)))
+if RunUtils.isMainWorld() then --Of course it is, duhh
+	require(ReplicatedStorage.Game.BoatScenery).Init()
+end
+require(ReplicatedStorage.Game.Lighthouse).Init()
+require(ReplicatedStorage.Game.Drawbridge).Init({
+	em = em
+})
+require(ReplicatedStorage.Game.NukeControl).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Robbery.CargoShip.CargoShipCoordinator).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Radio.RadioPlayer).Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.RobberyMoneyUI.RobberyMoneyUI).Init()
+Binder.new("DuffelBag", require(ReplicatedStorage.Game.DuffelBag.DuffelBag)):Start()
+require(ReplicatedStorage.Game.GunShop.GunShopSystem).init()
+require(ReplicatedStorage.Game.GunShop.GunShopUI).init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.ContextMessage.ContextMessageUI).init()
+require(ReplicatedStorage.Game.ContextTutorial.ContextTutorialSystem).init()
+require(ReplicatedStorage.Game.C4.C4System).init()
+require(ReplicatedStorage.Game.SmokeGrenade.SmokeGrenadeSystem).init()
+require(ReplicatedStorage.Game.Level2.LevelUISystem).init()
+require(ReplicatedStorage.Game.Contract.ContractSystem).init()
+require(ReplicatedStorage.Game.Contract.ContractUISystem).init()
+require(ReplicatedStorage.Game.Season.SeasonUISystem).init()
+require(ReplicatedStorage.Game.Season.SeasonSystem).init()
+require(ReplicatedStorage.Game.Robbery.MoneyTruck.MoneyTruckSystem).init()
+require(ReplicatedStorage.Game.NorthernLights).init()
+require(ReplicatedStorage.Game.Dog.DogSystem).init()
+require(ReplicatedStorage.Game.Adoption.AdoptionStandUI).init()
+require(ReplicatedStorage.Game.Adoption.AdoptionSystem).init()
+require(ReplicatedStorage.Game.Home.HomeUI.HomeSaleUISystem).init()
+require(ReplicatedStorage.Game.Home.Crew.CrewUISystem).init()
+require(ReplicatedStorage.Game.Home.Crew.CrewSystem).init()
+require(ReplicatedStorage.Game.Home.HomeSystem).init()
+require(ReplicatedStorage.Game.Home.HomeUI.HomeUISystem).init()
+require(ReplicatedStorage.Game.Home.HomeUI.HomeContainerUISystem).init()
+require(ReplicatedStorage.Game.Home.ItemPlacer.ItemPlacerSystem).init()
+require(ReplicatedStorage.Game.Home.Surface.SurfaceSystem).init()
+require(ReplicatedStorage.Game.Home.HomeItem.HomeItemSystem).init()
+require(ReplicatedStorage.Game.Home.HomeItem.Fabricate.Turret).init({
+	Event = RemoteEvent
+})
+require(ReplicatedStorage.Game.Home.HomeItem.Fabricate["Trapped Bookshelf"]).init({
+	Event = RemoteEvent
+})
+require(ReplicatedStorage.Game.Robbery.TombRobbery.TombRobberySystem).init({
+	Event = RemoteEvent
+})
+require(ReplicatedStorage.Game.Cart.CartSystem).init()
+require(ReplicatedStorage.Game.ProximityCamShake.ProximityCamShakeSystem).init()
+require(ReplicatedStorage.Game.ProximitySound.ProximitySoundSystem).init()
+require(ReplicatedStorage.Game.DartDispenser.DartDispenserSystem).init()
+require(ReplicatedStorage.Game.Plank.PlankSystem).init()
+require(ReplicatedStorage.Game.MilitaryTurret.MilitaryTurretSystem).init({
+	Event = RemoteEvent
+})
+require(ReplicatedStorage.Game.Destructible.DestructibleSystem).init()
+require(ReplicatedStorage.Game.PlayerMarkerSystem).init()
+require(ReplicatedStorage.Game.TopExpBoard.TopExpBoardSystem).init()
+require(ReplicatedStorage.Game.CatalogPurchaseSystem).init()
+require(ReplicatedStorage.CCTV.CCTVService).init()
+u18 = {}
+u19 = {}
+function em.bfvt28ju(SettingsData)
+	u18 = SettingsData
+	for i, v in pairs(SettingsData) do
+		local v102 = GameSettingsService.getSettingByName(i)
+		if v102 and not v102.noSave then
+			GameSettingsService.setValue(v102, v)
+		else
+			u19[i] = v
+		end
+	end
+end
+u20 = {}
+function v103(p26)
+	local v104 = u19[p26.name]
+	if v104 then
+		u19[p26.name] = nil
+		if not p26.noSave then
+			GameSettingsService.setValue(p26, v104)
+		end
+	end
+	p26.onChanged:Connect(function(p27)
+		local v105 = (u20[p26.name] or 0) + 1
+		u20[p26.name] = v105
+		if u18[p26.name] ~= p27 then
+			u18[p26.name] = p27
+			task.delay(0.25, function()
+				if u20[p26.name] == v105 then
+					RemoteEvent:FireServer("m3j642gz", p26.name, p27)
+				end
+			end)
+		end
+	end)
+end
+GameSettingsService.onAdded:Connect(v103)
+
+for _, v in ipairs(GameSettingsService.getAll()) do
+	v103(v)
+end
+
+require(ReplicatedStorage.VehicleLink.VehicleLinkBinder):Start()
+require(ReplicatedStorage.Elevator.ElevatorBinder):Start()
+require(ReplicatedStorage.Casino.CasinoService).init()
+require(ReplicatedStorage.TransportJet.TransportJetService).init()
+require(ReplicatedStorage.DamageIndicator.DamageIndicatorService).init()
+require(ReplicatedStorage.Trade.TradeService).init({
+	em = em
+})
+if RunUtils.isTradeWorld() then
+	require(ReplicatedStorage.Trade.TradeDesireService).init()
+end
+
+require(ReplicatedStorage.RewardSpinner.RewardSpinnerService).init()
+require(ReplicatedStorage.HyperChrome.HyperChromeService).init()
+require(ReplicatedStorage.RobberyBonus.RobberyBonusService).init({
+	em = em
+})
+require(ReplicatedStorage.Safes.SafesService).init({
+	em = em
+})
+require(ReplicatedStorage.GuardNPC.GuardNPCBinder):Start()
+require(ReplicatedStorage.AirDrop.AirDropService).init({
+	em = em
+})
+require(ReplicatedStorage.App.HoldEService).init()
+require(ReplicatedStorage.TargetingIndicator.TargetingIndicatorService).init()
+require(ReplicatedStorage.Forcefield.ForcefieldService).init()
+require(ReplicatedStorage.SpawnSelection.SpawnSelectionService).init()
+require(ReplicatedStorage.Consumables.ConsumablesService).init()
+--require(ReplicatedStorage.Game.RBBattlesIntegration2022).init()
+v109 = require(ReplicatedStorage.Game.CashBuyUI)
+v109.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+require(ReplicatedStorage.Game.Radio.Radio).Init()
+Settings.FetchProducts()
+local Falling = require(ReplicatedStorage.Game.Falling)
+Falling.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+local Paraglide = require(ReplicatedStorage.Game.Paraglide)
+Paraglide.Init({
+	Event = RemoteEvent, 
+	em = em
+})
+SomeRandomLerp = function(p28, p29, p30)
+	local NewValue = {}
+	
+	local v114 = nil
+
+	for i, v in pairs(p29) do
+		v114 = i
+		local v116 = v
+		local v115 = p28[i]
+		local v119
+
+		if type(v) == "number" then
+			v119 = (1 - p30) * v115 + p30 * v116
+		else
+			v119 = v115:lerp(v116, p30)
+		end
+
+		NewValue[i] = v119	
+	end
+
+	return NewValue
+end
+
+local u17 = {}
+u22 = 0
+function em.ia3niq8b(p31, p32, p33)
+	local l__Source__120 = p33.Source
+	local v121 = p33.Volume or 0.5
+	if v121 > 2 then
+		v121 = 2
+	end
+	if v121 ~= v121 then
+		v121 = 0.5
+	end
+	local v122 = p33.MaxTime or 1
+	local l__TimeStart__123 = p33.TimeStart
+	local l__Delay__124 = p33.Delay
+	if p33.TimeStop then
+		v122 = l__TimeStart__123 + p33.TimeStop
+	end
+	local v125 = u22 + 1
+	u22 = v125
+	local v126 = p33.Multi and ("%s_%s_%d"):format(p31, p32, v125) or ("%s_%s"):format(p31, p32)
+	local v127 = u17[v126]
+	if v127 then
+		v127.Object:Stop()
+		v127.Object:Destroy()
+		u17[v126] = nil
+	end
+	if not p33.Play then
+		return
+	end
+	if not l__Source__120 then
+		return
+	end
+	local v128 = Settings.Sounds[p32]
+	if not v128 then
+		return
+	end
+	local v129 = Instance.new("Sound")
+	v129.SoundId = "rbxassetid://" .. v128
+	if l__TimeStart__123 then
+		v129.TimePosition = l__TimeStart__123
+	end
+	if p33.SoundGroup then
+		v129.SoundGroup = p33.SoundGroup
+	end
+	v129.Name = v126
+	v129.Looped = p33.Looped
+	v129.Volume = v121
+	v129.PlaybackSpeed = p33.Pitch or 1
+	v129.EmitterSize = p33.EmitterSize or 10
+	v129.MaxDistance = 400
+	v129.Parent = l__Source__120
+	if l__Delay__124 then
+		delay(l__Delay__124, function()
+			v129:Play()
+		end)
+	else
+		v129:Play()
+	end
+	u17[v126] = {
+		Object = v129, 
+		Proxy = v125
+	}
+	delay(v122, function()
+		local v130 = u17[v126]
+		if not v130 then
+			return
+		end
+		if v125 < v130.Proxy then
+			return
+		end
+		v130.Object:Stop()
+		v130.Object:Destroy()
+		u17[v126] = nil
+	end)
+end
+function u23(p34, p35, p36)
+	if not p35.Source then
+		return
+	end
+	p35.Play = true
+	if not p36 then
+		RemoteEvent:FireServer("ia3niq8b", p34, p35)
+	end
+	em.ia3niq8b(LocalPlayer.Name, p34, p35)
+end
+FireworksPlay = function(Quantity)
+	local v131 = AlexParticles.MakeState()
+	v131.Frame = Particles.Particles
+	AlexParticles.EasySimulate(v131, 4)
+	local l__AbsoluteSize__132 = v131.Frame.AbsoluteSize
+	local l__X__133 = l__AbsoluteSize__132.X
+	local l__Y__134 = l__AbsoluteSize__132.Y
+	local function v135(p38)
+		if Quantity <= 4 or math.random() > 0.2 then
+			u23("FireworkBang", {
+				Source = MainGui, 
+				Volume = 0.2 + math.random() * 0.3, 
+				Multi = true
+			}, true)
+		end
+	end
+	for i = 1, Quantity do
+		local v137 = math.random()
+		local v138 = Vector3.new(0, -400, 0) + Math.Uniform2D(150)
+		local v139 = AlexParticles.Firework(v131, Vector3.new(math.random() * l__X__133, l__Y__134, 0), v138, Vector3.new(0, 0, 0))
+		v139.ttl = (l__Y__134 - (l__Y__134 * 0.3 + l__Y__134 * 0.6 * v137)) / v138.magnitude
+		v139.OnDestroy = v135
+		wait(0.1 + math.random() * 0.1 * 0.5)
+	end
+end
+function em.g32vnrf4(p39)
+	assert(p39 <= 50)
+	FireworksPlay(p39)
+end
+PlayerDataStored.Fireworks = FireworksPlay
+require(ReplicatedStorage.Game.Party).Init({
+	Fireworks = FireworksPlay
+})
+function em.j2cpa4j9(p40)
+	if p40.Bribed then
+		em.yzczkwdf({
+			Title = "Arrest", 
+			Text = ("You are bribed! Wait %d seconds."):format(p40.Bribed)
+		})
+	end
+end
+function em.u144zgfs(p41)
+	if p41.Cooldown then
+		em.yzczkwdf({
+			Title = "Breakout", 
+			Text = ("Wait %d seconds."):format(p41.Cooldown)
+		})
+	end
+end
+u25 = false
+u26 = tick()
+u27 = tick()
+function u28()
+	if u25 then
+		u25 = false
+		RemoteEvent:FireServer("w904exr6", tick() - u26)
+	end
+end
+local LocalPlayerValuesData = {
+	VehiclesOwned = {}, 
+	VehiclesRented = {}, 
+	Nitro = 250, 
+	NitroLastMax = 250
+}
+function u30(p42, p43)
+	local v140 = {}
+	if not p43 then
+		RemoteEvent:FireServer("ia3niq8b", p42, v140)
+	end
+	em.ia3niq8b(LocalPlayer.Name, p42, v140)
+end
+local NitroShopGui = ReplicatedStorage.StarterGui.NitroShopGui
+function em.lq83ent1(p44, p45)
+	LocalPlayerValuesData.Nitro = p44
+	LocalPlayerValuesData.NitroLastMax = p45
+	LocalPlayerValuesData.NitroForceUIUpdate = true
+	NitroShopGui.Container.Container.ContainerBar.Value.Size = UDim2.new(p44 / Settings.Scalar.NitroMax, 0, 1, 0)
+	NitroShopGui.Container.Container.ContainerFuel.Amount.Text = ("%d/%d"):format(p44, Settings.Scalar.NitroMax)
+end
+RunService.RenderStepped:Connect(function(p46)
+	--debug.profilebegin("CircleAction (position, renderstepped")
+	ModuleUI.CircleAction.Update(p46)
+--	debug.profileend()
+end)
+RunService.Stepped:Connect(function()
+	if CurrentPacket and not CurrentPacket.Passenger then
+		if CurrentPacket.Type == "Chassis" then
+			Classes.Chassis.UpdateStepped(CurrentPacket)
+			return
+		end
+		if CurrentPacket.Type == "Motorcycle" or CurrentPacket.Type == "DuneBuggy" then
+			Classes.Chassis2.UpdateStepped(CurrentPacket)
+		end
+	end
+end)
+local InputPosition = Vector3.new(0, 0, 0)
+local CurrentCamera = workspace.CurrentCamera
+local CameraLook = Vector3.new(0, 0, 0)
+local CharacterSizeChanges = false
+local LastUnix = 0
+function ActivateNitrous()
+	u30("NitroLoop")
+	if CurrentPacket and not CurrentPacket.Passenger then
+		CurrentPacket.Nitro = false
+		if CurrentPacket.Nitrous then
+			for v141, v142 in pairs(CurrentPacket.Nitrous) do
+				v142.Enabled = false
+			end
+		end
+	end
+	u28()
+	RemoteEvent:FireServer("t8opodvh")
+end
+RunService.Heartbeat:Connect(function(DeltaTime)
+	debug.profilebegin("Vehicle Heartbeat")
+	if CurrentPacket and not CurrentPacket.Passenger then
+		if CurrentPacket.Type == "Chassis" then
+			Classes.Chassis.Update(CurrentPacket, DeltaTime)
+		elseif CurrentPacket.Type == "Heli" then
+			Classes.Heli.Update(CurrentPacket, DeltaTime)
+		elseif CurrentPacket.Type == "Custom" then
+			if CurrentPacket.Make == "Volt" then
+				Classes.Volt.Update(CurrentPacket, DeltaTime)
+			end
+		elseif CurrentPacket.Type == "Motorcycle" or CurrentPacket.Type == "DuneBuggy" then
+			Classes.Chassis2.UpdateHQ(CurrentPacket, DeltaTime)
+		end
+	end
+	debug.profileend()
+	debug.profilebegin("Camera Looking")
+	local ScreenPoint = CurrentCamera:ScreenPointToRay(InputPosition.X, InputPosition.Y)
+	local CurrentTime = tick()
+	CameraLook = CameraLook + (ScreenPoint.Origin + ScreenPoint.Direction * 30 - CameraLook) * 0.2
+	local Character = LocalPlayer.Character
+	local v157
+	local v158
+	if Character then
+		local Humanoid = Character:FindFirstChild("Humanoid")
+		if Humanoid and (not CurrentPacket or CurrentPacket.Make ~= "JetSki") then
+			local RootPart = Humanoid.RootPart
+			if RootPart then
+				local Head = Character:FindFirstChild("Head")
+				local UpperTorso = Character:FindFirstChild("UpperTorso")
+				if Head and UpperTorso then
+					local Waist = UpperTorso:FindFirstChild("Waist")
+					local Neck = Head:FindFirstChild("Neck")
+					if Waist and Neck then
+						local v152 = 0
+						local v153 = 0
+						debug.profilebegin("Calculate looking")
+						if not CharacterSizeChanges then
+							local v154 = (CurrentCamera.CFrame * CFrame.Angles(0.2, 0, 0)).LookVector
+							if Math.IsNaNv3(v154) then
+								v154 = Vector3.new(0, 0, -1)
+							end
+							local v155 = RootPart.CFrame.lookVector:Dot(v154:Cross(Vector3.new(0, 1, 0)))
+							local v156 = math.asin(v154.Y)
+							if CurrentPacket then
+								if CurrentPacket.Passenger and (CurrentPacket.NoLook or ItemSystem.GetLocalEquipped()) then
+									v155 = 0
+									v156 = 0
+								end
+							elseif ItemSystem.GetLocalEquipped() then
+								v155 = 0
+								v156 = 0
+							end
+							if Math.IsNaN(v155) then
+								v155 = 0
+							end
+							if Math.IsNaN(v153) then
+								v153 = 0
+							end
+							v157 = CFrame.new(Waist.C1.p) * CFrame.Angles(0, -v152 * 0.5 * 1, 0) * CFrame.Angles(-v153 * 0.2 * 1, 0, 0)
+							v158 = CFrame.new(Neck.C1.p) * CFrame.Angles(-v153 * 0.5 * 1, 0, 0) * CFrame.Angles(0, -v152 * 0.5 * 1, 0)
+						else
+							v157 = CFrame.new(Waist.C1.p)
+							v158 = CFrame.new(Neck.C1.p)
+						end
+						if Math.IsNaNcf(v157) then
+							v157 = CFrame.new(Waist.C1.p)
+						end
+						if Math.IsNaNcf(v158) then
+							v158 = CFrame.new(Neck.C1.p)
+						end
+						Waist.C1 = v157
+						Neck.C1 = v158
+						if CurrentTime - LastUnix >= 0.4 then
+							LastUnix = CurrentTime
+							if Math.IsNaN(v152) then
+								v152 = 0
+							end
+							if Math.IsNaN(v153) then
+								v153 = 0
+							end
+							if em.hems then
+								RemoteEvent:FireServer("q2l1t35z", v152, v153)
+							end
+						end
+						debug.profileend()
+					end
+				end
+			end
+		end
+	end
+	for _, v in pairs(AudioPitchData) do
+		local v164, v165 = Math.Spring(v.HeadingSpring)
+		local v166, v167 = Math.Spring(v.PitchSpring)
+		local l__Waist__168 = v.Waist
+
+		if l__Waist__168 then
+			local v169 = CFrame.new(l__Waist__168.C1.p) * CFrame.Angles(-v166 * 0.2, -v164 * 0.5, 0)
+			if Math.IsNaNcf(v169) then
+				v169 = CFrame.new(0, 0, 0)
+			end
+			l__Waist__168.C1 = v169
+		end
+
+		local l__Neck__170 = v.Neck
+		if l__Neck__170 then
+			local v171 = CFrame.new(l__Neck__170.C1.p) * CFrame.Angles(-v166 * 0.5, -v164 * 0.5, 0)
+			if Math.IsNaNcf(v171) then
+				v171 = CFrame.new(0, 0, 0)
+			end
+			l__Neck__170.C1 = v171
+		end
+	end
+
+	debug.profileend()
+	if CurrentPacket and not CurrentPacket.Passenger and CurrentPacket.Type ~= "Heli" and CurrentPacket.Type ~= "Chassis3" then
+		local v172 = false
+		if LocalPlayerValuesData.NitroForceUIUpdate then
+			LocalPlayerValuesData.NitroForceUIUpdate = false
+			v172 = true
+		end
+		if VehicleModule._forceUpdateNitroBar then
+			VehicleModule._forceUpdateNitroBar = false
+			v172 = true
+		end
+		if CurrentPacket.Nitro then
+			v172 = true
+			LocalPlayerValuesData.Nitro = LocalPlayerValuesData.Nitro - DeltaTime * 5
+		end
+		if LocalPlayerValuesData.Nitro < 0 then
+			v172 = true
+			LocalPlayerValuesData.Nitro = 0
+			ActivateNitrous()
+		end
+		if v172 then
+			VehicleModule.updateSpdBarRatio(LocalPlayerValuesData.Nitro / Settings.Scalar.NitroMax)
+		end
+	end
+end)
+local tire_assets = {
+	tire_pop = 4534995816, 
+	tire_leak = 4534995685
+}
+function PopVehicleTires(p48, p49)
+	assert(p48)
+	assert(p49 ~= nil)
+	local l__Model__173 = p48.Model
+	local v176 = 1
+	local v177 = 1
+	if p48.Type ~= "Chassis" or p48.Make == "Volt" then
+		if (p48.Type == "Motorcycle" or p48.Type == "DuneBuggy") and p48.Wheels then
+			for v174, v175 in pairs(p48.Wheels) do
+				if p49 then
+					v176 = 1
+				else
+					v176 = 0
+				end
+				v175.VisualModelRoot.Parent.MeshPart.Transparency = v176
+			end
+		end
+		return
+	end
+	if p49 then
+		v177 = 1
+	else
+		v177 = 0
+	end
+	for v178, v179 in pairs(l__Model__173:GetChildren()) do
+		if v179:IsA("Model") and v179.Name:sub(1, 5) == "Wheel" then
+			local l__Wheel__180 = v179:FindFirstChild("Wheel")
+			if l__Wheel__180 then
+				l__Wheel__180.Transparency = v177
+			end
+		end
+	end
+	local l__WheelExtra__181 = l__Model__173.Model:FindFirstChild("WheelExtra")
+	if l__WheelExtra__181 then
+		local l__Wheel__182 = l__WheelExtra__181:FindFirstChild("Wheel")
+		if l__Wheel__182 then
+			l__Wheel__182.Transparency = v177
+		end
+	end
+end
+DisableHeli = function(Packet, Duration)
+	local Model = Packet.Model
+	if not Model then
+		return
+	end
+	if not Model:FindFirstChild("Engine") then
+		return
+	end
+	if Packet.HasProp then
+		Classes.Heli.SpinProp(Packet, Duration)
+		return
+	end
+	if Packet.IsUFO then
+		Classes.Heli.SpinUFO(Packet, Duration)
+		return
+	end
+	if Packet.IsCrewCapsule then
+		Classes.Heli.SpinCrewCapsule(Packet, Duration)
+		return
+	end
+	if Packet.IsDrone then
+		Classes.Heli.SpinDrone(Packet, Duration)
+	end
+end
+local LastUnixTime2 = 0
+function u43(p52, p53, p54, p55, p56)
+	p56 = p56 or 16
+	local l___HornSound__184 = p52:FindFirstChild("_HornSound")
+	if l___HornSound__184 then
+		l___HornSound__184:Destroy()
+	end
+	if p53 then
+		local v185 = Audio.ObjectLocal(p52, p54, {
+			Looped = p55
+		})
+		v185.Name = "_HornSound"
+		v185.Parent = p52
+		task.delay(p56, function()
+			if v185.Parent == p52 then
+				v185:Destroy()
+			end
+		end)
+	end
+end
+function em.lt394lj6(p57, p58, p59, p60, p61)
+	u43(p58, p59, p60, p61, 10)
+end
+local CrawlAnim = Instance.new("Animation")
+if RunUtils.getEnv() == RunConsts.QA_NAME then
+	CrawlAnim.AnimationId = "rbxassetid://14774363205"
+else
+	CrawlAnim.AnimationId = "rbxassetid://14774363205"
+end
+local PunchAnimations = {}
+local RightPunchAnim = Instance.new("Animation")
+RightPunchAnim.AnimationId = "rbxassetid://14774367187"
+table.insert(PunchAnimations, RightPunchAnim)
+local LeftPunchAnim = Instance.new("Animation")
+LeftPunchAnim.AnimationId = "rbxassetid://14774371596"
+table.insert(PunchAnimations, LeftPunchAnim)
+local CurrentAnim = nil
+local IsSprinting = false
+local FirstUnixTick = tick()
+local SomeUnixTable = { 0, 0, 0 }
+function SetupCrawlingChar()
+	local l__Character__190 = LocalPlayer.Character
+	local l__Humanoid__191 = l__Character__190:FindFirstChild("Humanoid")
+	local l__PrimaryPart__192 = l__Character__190.PrimaryPart
+	CharacterSizeChanges = not CurrentAnim
+	CharacterUtil.IsCrawling = CharacterSizeChanges
+	local l__UpperTorso__49 = l__Character__190:FindFirstChild("UpperTorso")
+	local l__LowerTorso__50 = l__Character__190:FindFirstChild("LowerTorso")
+	local u51 = {}
+	local function u52(p62)
+		
+		for v196, v197 in pairs(p62:GetChildren()) do
+			if v197:IsA("JointInstance") and (v197.Part1 == l__UpperTorso__49 or v197.Part1 == l__LowerTorso__50 or v197.Part0 == l__UpperTorso__49 or v197.Part0 == l__LowerTorso__50) then
+				table.insert(u51, {
+					Motor = v197, 
+					Part0 = v197.Part0, 
+					Part1 = v197.Part1
+				})
+				v197.Part0 = nil
+				v197.Part1 = nil
+			end
+			u52(v197)        
+		end
+
+	end
+	u52(l__Character__190)
+	if CharacterSizeChanges then
+		local v198 = Instance.new("Part")
+		v198.Shape = Enum.PartType.Ball
+		v198.Size = Vector3.new(2, 1, 4)
+		v198.Name = "Ball"
+		v198.CanCollide = true
+		v198.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 1, 1)
+		v198.CFrame = l__PrimaryPart__192.CFrame * CFrame.new(0, 0, 1)
+		v198.Transparency = 1
+		v198.Parent = l__Character__190
+		Joint.CustomWeld(v198, l__PrimaryPart__192, CFrame.new(0, 1, 0), CFrame.new(0, 0, 0))
+	else
+		local l__Ball__199 = l__Character__190:FindFirstChild("Ball")
+		if l__Ball__199 then
+			l__Ball__199:Destroy()
+		end
+	end
+	local l__Size__200 = l__UpperTorso__49.Size
+	l__UpperTorso__49.Size = CharacterSizeChanges and Vector3.new(l__Size__200.x, l__Size__200.y, math.min(l__Size__200.z, 0.8)) or l__UpperTorso__49.OriginalSize.Value
+	l__UpperTorso__49.CanCollide = not CharacterSizeChanges
+	local l__Size__201 = l__LowerTorso__50.Size
+	l__LowerTorso__50.Size = CharacterSizeChanges and Vector3.new(l__Size__201.x, l__Size__201.y, math.min(l__Size__201.z, 0.8)) or l__LowerTorso__50.OriginalSize.Value
+	l__LowerTorso__50.CanCollide = not CharacterSizeChanges
+
+	for _, v203 in ipairs(u51) do
+		v203.Motor.Part0 = v203.Part0
+		v203.Motor.Part1 = v203.Part1
+	end
+
+	l__Character__190.HumanoidRootPart.CanCollide = not CharacterSizeChanges
+	if CurrentAnim then
+		CurrentAnim:Stop()
+		CurrentAnim = nil
+		return
+	end
+	CurrentAnim = l__Humanoid__191:LoadAnimation(CrawlAnim)
+	CurrentAnim:Play()
+end
+local LastUnixAgain = tick()
+local PrimaryPunchAnim = nil
+require(ReplicatedStorage.Game.DefaultActions).init({
+	setSprinting = function(Enabled)
+		IsSprinting = Enabled
+	end, 
+	attemptToggleCrawling = function()
+		local Character = LocalPlayer.Character
+		if not Character then
+			return
+		end
+		local Humanoid = Character:FindFirstChild("Humanoid")
+		if not Humanoid then
+			return
+		end
+		if not CurrentAnim and Humanoid.Sit then
+			return
+		end
+		if not CurrentAnim and Humanoid.PlatformStand then
+			return
+		end
+		if not Character.PrimaryPart then
+			return
+		end
+		if Classes.Heli.Roped then
+			return
+		end
+		if Falling.IsRagdolling() then
+			return
+		end
+		if Paraglide.IsFlying() then
+			return false
+		end
+		if not InventoryItemSystem.unequipAll() then
+			return
+		end
+		local v207 = ItemSystem.GetLocalEquipped()
+		if v207 and v207.ItemData.Locked then
+			return
+		end
+		if tick() - FirstUnixTick < 0.1 then
+			return
+		end
+		if tick() - SomeUnixTable[#SomeUnixTable] < 2 then
+			return
+		end
+		FirstUnixTick = tick()
+		if CurrentAnim then
+			table.remove(SomeUnixTable)
+			table.insert(SomeUnixTable, 1, FirstUnixTick)
+		end
+		SetupCrawlingChar()
+	end, 
+	attemptPunch = function()
+		if tick() - LastUnixAgain < 0.5 then
+			return
+		end
+		local Humanoid = LocalPlayer.Character
+		if not Humanoid then
+			return
+		end
+		local Humanoid = Humanoid:FindFirstChild("Humanoid")
+		if not Humanoid then
+			return
+		end
+		if ItemSystem.GetLocalEquipped() then
+			return
+		end
+		if PrimaryPunchAnim then
+			PrimaryPunchAnim:Stop()
+		end
+		local RemovedAnimationPunch = table.remove(PunchAnimations, 1)
+		table.insert(PunchAnimations, RemovedAnimationPunch)
+		PrimaryPunchAnim = Humanoid:LoadAnimation(RemovedAnimationPunch)
+		PrimaryPunchAnim:Play()
+		LastUnixAgain = tick()
+		RemoteEvent:FireServer("u8v5ve3k")
+	end
+})
+function em.cycmibto(p64, p65)
+	GameUtil.Schedule = p64
+	if ChinaPolicyService and ChinaPolicyService:IsActive() then
+		p65 = true
+	end
+	if p65 then
+		return
+	end
+	if GameUtil.Team == Settings.EnumTeam.Prisoner then
+		em.yzczkwdf({
+			Text = Localization:FormatByKey("Schedule." .. p64)
+		})
+	end
+end
+function em.q2l1t35z(AudioToFetch, Target, SecondTarget)
+	local v211 = AudioPitchData[AudioToFetch]
+	if not v211 then
+		v211 = {
+			HeadingSpring = Math.MakeSpring(0, 10, 0.8), 
+			PitchSpring = Math.MakeSpring(0, 10, 0.8)
+		}
+		AudioPitchData[AudioToFetch] = v211
+	end
+	local Sound = Players:FindFirstChild(AudioToFetch)
+	if not Sound then
+		AudioPitchData[AudioToFetch] = nil
+		return
+	end
+	local Character = Sound.Character
+	if not Character then
+		AudioPitchData[AudioToFetch] = nil
+		return
+	end
+	local UpperTorso = Character:FindFirstChild("UpperTorso")
+	if not UpperTorso then
+		AudioPitchData[AudioToFetch] = nil
+		return
+	end
+	v211.Waist = UpperTorso:FindFirstChild("Waist")
+	v211.Neck = Character.Head:FindFirstChild("Neck")
+	Math.SpringSetTarget(v211.HeadingSpring, Target)
+	Math.SpringSetTarget(v211.PitchSpring, SecondTarget)
+end
+local CartBinder = require(ReplicatedStorage.Game.Cart.CartBinder)
+function OnJumpAction()
+	if CurrentPacket then
+		VehicleModule.OnVehicleJumpExited:Fire(CurrentPacket)
+		RemoteEvent:FireServer("xtccawp9")  --SYNGIO! don't change this... you broke the TombRobberySystem
+		VehicleModule.LastVehicleExit = tick()
+	else
+		for _, v in ipairs(CartBinder:GetAll()) do
+			if v:GetOccupant() == LocalPlayer.Character then
+				RemoteEvent:FireServer("xtccawp9")
+				break
+			end
+		end
+	end
+	if Classes.Heli.Roped then
+		Classes.Heli.AttemptRopeDetach()
+	end
+end
+CharacterUtil.OnJump = OnJumpAction
+local Lighting = game:GetService("Lighting")
+local ColorCorrectionEffect = Instance.new("ColorCorrectionEffect")
+ColorCorrectionEffect.Enabled = false
+ColorCorrectionEffect.Parent = Lighting
+local BlurEffect = Instance.new("BlurEffect")
+BlurEffect.Size = 0
+BlurEffect.Enabled = false
+BlurEffect.Parent = Lighting
+local NewSaturation = nil
+local NewDeathSaturation = nil
+function v224()
+	DeathGui.Frame:TweenSizeAndPosition(UDim2.new(1, 40, 0, 0), UDim2.new(0, -20, 0.5, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true, function()
+		DeathGui.Frame.Visible = false
+	end)
+end
+GameUtil.removeDeathGui = function()
+	DeathGui.Frame:TweenSizeAndPosition(UDim2.new(1, 40, 0, 0), UDim2.new(0, -20, 0.5, 0), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.1, true, function()
+		DeathGui.Frame.Visible = false
+	end)
+end
+GameUtil.removeDeathLighting = function()
+	if NewSaturation then
+		local u60 = nil
+		local u61 = 0
+		u60 = RunService.RenderStepped:connect(function(p69)
+			u61 = u61 + p69 * 2
+			if not (u61 >= 1) then
+				local v222 = SomeRandomLerp(NewSaturation, NewDeathSaturation, 1)
+				ColorCorrectionEffect.Saturation = v222.Saturation
+				BlurEffect.Size = v222.Blur
+				return
+			end
+			if u60 then
+				u60:Disconnect()
+			end
+			local v223 = SomeRandomLerp(NewSaturation, NewDeathSaturation, 1)
+			ColorCorrectionEffect.Saturation = v223.Saturation
+			BlurEffect.Size = v223.Blur
+			BlurEffect.Enabled = false
+			ColorCorrectionEffect.Enabled = false
+		end)
+	end
+end
+local TouchEnabled = UserInputService.TouchEnabled
+function em.oekko6my()
+	wait()
+	local Character = LocalPlayer.Character
+	if not Character then
+		return
+	end
+	local Humanoid = Character:FindFirstChild("Humanoid")
+	if not Humanoid then
+		return
+	end
+	Humanoid.Seated:connect(function(p70)
+		if p70 and CharacterUtil.IsCrawling then
+			SetupCrawlingChar()
+		end
+	end)
+	GameUtil.removeDeathGui()
+	GameUtil.removeDeathLighting()
+	if TouchEnabled then
+		IsSprinting = true
+		if (not DefaultActions.sprintButton._pressed) == true and DefaultActions.sprintButton._pressState then
+			DefaultActions.sprintButton._pressState()
+		end
+	end
+end
+local IsRagdolling = false
+local store = require(ReplicatedStorage.App.store)
+function em.o5wvnhbj(p71, p72)
+	CharacterSizeChanges = false
+	CharacterUtil.IsCrawling = false
+	IsSprinting = false
+	if (not DefaultActions.sprintButton._pressed) == false and DefaultActions.sprintButton._pressState then
+		DefaultActions.sprintButton._pressState()
+	end
+	IsRagdolling = false
+	PlayerDataStored.HasEscaped = p72
+	OnJumpAction()
+	store:dispatch({
+		type = "setLastDiedAt", 
+		lastDiedAt = workspace:GetServerTimeNow()
+	})
+	if p71 then
+		return
+	end
+	DeathGui.Frame.TextLabel.Text = Localization:FormatByKey("DeathMessage." .. math.random(0, 13))
+	BlurEffect.Enabled = true
+	ColorCorrectionEffect.Enabled = true
+	NewDeathSaturation = {
+		Blur = 0, 
+		Saturation = 0
+	}
+	NewSaturation = {
+		Blur = 8, 
+		Saturation = -1
+	}
+	local u65 = nil
+	local u66 = 0
+	local function u67()
+		if u65 then
+			u65:Disconnect()
+		end
+		local v227 = SomeRandomLerp(NewDeathSaturation, NewSaturation, 1)
+		ColorCorrectionEffect.Saturation = v227.Saturation
+		BlurEffect.Size = v227.Blur
+	end
+	u65 = RunService.RenderStepped:connect(function(p73)
+		u66 = u66 + p73 * 1
+		if u66 >= 1 then
+			return u67()
+		end
+		local v228 = SomeRandomLerp(NewDeathSaturation, NewSaturation, u66)
+		ColorCorrectionEffect.Saturation = v228.Saturation
+		BlurEffect.Size = v228.Blur
+	end)
+	delay(0.5, function()
+		DeathGui.Frame.Size = UDim2.new(1, 40, 0, 0)
+		DeathGui.Frame.Position = UDim2.new(0, -20, 0.5, 0)
+		DeathGui.Frame:TweenSizeAndPosition(UDim2.new(1, 40, 0, 150), UDim2.new(0, -20, 0.5, -75), Enum.EasingDirection.Out, Enum.EasingStyle.Quad, 0.5, true)
+		DeathGui.Frame.Visible = true
+	end)
+end
+em.pp12vadv = function()
+	IsRagdolling = true
+	Falling.StartRagdolling(Settings.Time.Stunned)
+	wait(Settings.Time.Stunned)
+	IsRagdolling = false
+end
+em.yzczkwdf = function(p74)
+	assert(p74 ~= nil)
+	assert(p74.Text ~= nil)
+	Notification.new({
+		Text = p74.Text, 
+		Duration = p74.Duration
+	})
+end
+
+PlayerDataStored.Notification = em.yzczkwdf
+em.iqmbzh02 = function(p75, p76)
+	pcall(function()
+		StarterGui:SetCore("ChatMakeSystemMessage", {
+			Text = ("[Server] %s"):format(p75), 
+			Color = p76 or Color3.new(0.9490196078431372, 0.8588235294117647, 0.06274509803921569)
+		})
+	end)
+end
+em.lcjj42k0 = function(p77)
+	assert(p77 ~= nil)
+	local l__Cash__229 : number = p77.Cash
+	local v230 = ""
+	if l__Cash__229 >= 0 then
+		v230 = ""
+	else
+		v230 = "-"
+	end
+	local v231 = {}
+	local v232, v233, v234 = string.match(tostring(math.abs(l__Cash__229)), "^([^%d]*%d)(%d*)(.-)$")
+	v231[1] = v232 .. v233:reverse():gsub("(%d%d%d)", "%1,"):reverse() .. v234
+	MainGui.BuyVehicle.Money.Text = v230 .. Localization:FormatByKey("General.Cash", v231)
+	v109.SetCash(p77.Cash)
+	store:dispatch({
+		type = "setCash", 
+		cash = p77.Cash
+	})
+end
+local u58 = 0
+em.xl48ve3o = function(p78, p79)
+	local v235 = u58 + 1
+	u58 = v235
+	if p78 > 0 then
+		--task.spawn(FireworksPlay, 2)
+		MainGui.PlusCash.TextColor3 = Color3.fromRGB(68, 194, 93)
+		MainGui.PlusCash.TextStrokeColor3 = Color3.fromRGB(33, 97, 44)
+	else
+		MainGui.PlusCash.TextColor3 = Color3.fromRGB(240, 30, 30)
+		MainGui.PlusCash.TextStrokeColor3 = Color3.fromRGB(180, 0, 0)
+	end
+	if not MainGui.PlusCash.Visible then
+		MainGui.PlusCash.Text = ""
+	end
+	MainGui.PlusCash.Visible = true
+	MainGui.PlusCash.TextSize = 28
+	MainGui.PlusCash.Font = Enum.Font.SourceSansBold
+	MainGui.PlusCash.RichText = true
+	local v236 = ""
+	local v241 = ""
+	if p79 then
+		if p78 >= 0 then
+			v236 = ""
+		else
+			v236 = "-"
+		end
+		local v237 = {}
+		local v238, v239, v240 = string.match(tostring(math.abs(p78)), "^([^%d]*%d)(%d*)(.-)$")
+		v237[1] = v238 .. v239:reverse():gsub("(%d%d%d)", "%1,"):reverse() .. v240
+		MainGui.PlusCash.Text = MainGui.PlusCash.Text .. ("<font color=\"#FFFFFF\"><stroke color=\"#111111\" thickness=\"0.75\">%s: </stroke></font><b>%s</b>\n"):format(p79, v236 .. Localization:FormatByKey("General.Cash", v237))
+	else
+		if p78 >= 0 then
+			v241 = ""
+		else
+			v241 = "-"
+		end
+		local v242 = {}
+		local v243, v244, v245 = string.match(tostring(math.abs(p78)), "^([^%d]*%d)(%d*)(.-)$")
+		v242[1] = v243 .. v244:reverse():gsub("(%d%d%d)", "%1,"):reverse() .. v245
+		MainGui.PlusCash.Text = MainGui.PlusCash.Text .. ("<b>%s</b>\n"):format(v241 .. Localization:FormatByKey("General.Cash", v242))
+	end
+	task.delay(3, function()
+		if u58 ~= v235 then
+			return
+		end
+		MainGui.PlusCash.Visible = false
+	end)
+end
+local AnyPacket = nil
+em.qltklp24 = function(OldCarData, Packet)
+	if Packet then
+		if Packet.Sounds then
+			for v246, v247 in pairs(Packet.Sounds) do
+				v247.Volume = 0
+			end
+		end
+		if Packet.Type == "Heli" then
+			Packet.PropAlpha = 0
+			DisableHeli(Packet, 0)
+		end
+	end
+	AnyPacket = OldCarData
+end
+em.qacgkmjz = function(p82)
+	AudioPitchData[p82] = nil
+end
+local PlayerCameras = require(LocalPlayer.PlayerScripts:WaitForChild("PlayerModule")):GetCameras()
+local BuyVehicle = MainGui.BuyVehicle
+local CurrentPassBuying = nil
+BuyVehicle.Buy.MouseButton1Down:connect(function()
+	if not CurrentPassBuying then
+		BuyVehicle.Visible = false
+		OnJumpAction()
+		return
+	end
+	RemoteEvent:FireServer("gaktrzwu", CurrentPassBuying)
+end)
+BuyVehicle.Cancel.MouseButton1Down:connect(function()
+	BuyVehicle.Visible = false
+	OnJumpAction()
+end)
+BuyVehicle.Rent.MouseButton1Down:connect(function()
+	if not CurrentPassBuying then
+		BuyVehicle.Visible = false
+		OnJumpAction()
+		return
+	end
+	MarketplaceService:PromptProductPurchase(LocalPlayer, 437705749)
+	RemoteEvent:FireServer("k8fckovy", CurrentPassBuying)
+end)
+BuyVehicle.BuyCash.MouseButton1Down:connect(function()
+	BuyVehicle.Visible = false
+	OnJumpAction()
+	v109.Open()
+end)
+function em.gaktrzwu(PurchaseData)
+	if PurchaseData.Success then
+		BuyVehicle.Visible = false
+		FireworksPlay(5)
+		return
+	end
+	if PurchaseData.NotEnoughMoney then
+		BuyVehicle.Visible = false
+		OnJumpAction()
+		v109.Open()
+		return
+	end
+	if not PurchaseData.LowLevel then
+		BuyVehicle.Visible = false
+		OnJumpAction()
+		return
+	end
+	em.yzczkwdf({
+		Title = "Vehicle", 
+		Text = ("This requires level %d."):format(PurchaseData.LowLevel)
+	})
+end
+waitForChild(ReplicatedStorage, "UpdateOwnedCashBillboard"):andThen(function(p84)
+	p84.OnClientEvent:Connect(function(Vehicle)
+		LocalPlayerValuesData.VehiclesOwned = Vehicle
+	end)
+end)
+function em.ip1cx6kq(VehicleToRent)
+	LocalPlayerValuesData.VehiclesRented = VehicleToRent
+end
+function em.x9vzr9a4(VehicleToPrompt, p88, p89)
+	CurrentPassBuying = VehicleToPrompt
+	if p88 then
+		PromptPurchase(p88)
+		return
+	end
+	if Settings.Price[VehicleToPrompt] then
+		local v248 = Localization:FormatByKey(("vehiclemake.%s"):format(VehicleToPrompt))
+		local v249 = Settings.Price[VehicleToPrompt]
+		local v250 = ""
+		if v249 >= 0 then
+			v250 = ""
+		else
+			v250 = "-"
+		end
+		local v251 = {}
+		local v252, v253, v254 = string.match(tostring(math.abs(v249)), "^([^%d]*%d)(%d*)(.-)$")
+		v251[1] = v252 .. v253:reverse():gsub("(%d%d%d)", "%1,"):reverse() .. v254
+		local l__BuyVehicle__255 = MainGui.BuyVehicle
+		l__BuyVehicle__255.TextLabel.Text = ("Buy %s for %s?"):format(v248, v250 .. Localization:FormatByKey("General.Cash", v251))
+		l__BuyVehicle__255.Rent.Visible = p89
+		l__BuyVehicle__255.Visible = true
+		if Enum.UserInputType.Gamepad1 == nil then
+			GuiService.SelectedObject = l__BuyVehicle__255.Buy
+			return
+		else
+			return
+		end
+	elseif VehicleToPrompt ~= "EscapeBot" then
+		em.yzczkwdf({
+			Text = "This vehicle cannot be purchased!"
+		})
+		return
+	end
+	em.yzczkwdf({
+		Text = "Defeat the CEO to pilot the EscapeBot!"
+	})
+end
+function em.ni2snjmg()
+	local l__SimpleMessage__256 = MainGui.SimpleMessage
+	l__SimpleMessage__256.Visible = true
+	l__SimpleMessage__256.Text = Localization:FormatByKey("Vehicle.Locked")
+	delay(1, function()
+		l__SimpleMessage__256.Visible = false
+	end)
+end
+local useVehicleFollowCamera = {
+	name = "useVehicleFollowCamera", 
+	title = "Vehicle Follow Camera", 
+	type = gameSettingType.Checkbox, 
+	defaultValue = false, 
+	onChanged = nil,
+	order = 50
+}
+GameSettingsService.add(useVehicleFollowCamera)
+local function PrepareFollowCamera(p90)
+	if CurrentPacket then
+		local v259 = VehicleModule.prepareCameraSubject(CurrentPacket, p90)
+		if v259 then
+			CurrentCamera.CameraSubject = v259
+		end
+	end
+end
+PrepareFollowCamera(useVehicleFollowCamera.defaultValue)
+useVehicleFollowCamera.onChanged:Connect(PrepareFollowCamera)
+local ActionButtonService = require(ReplicatedStorage.ActionButton.ActionButtonService)
+local function EnableNitrousOnPressed()
+	if tick() - u27 < 0.1 then
+		return
+	end
+	u27 = tick()
+	if u25 then
+		u28()
+	end
+	u25 = true
+	u26 = tick()
+	if CurrentPacket and not CurrentPacket.Passenger and #CurrentPacket.Nitrous > 0 then
+		CurrentPacket.Nitro = true
+		u23("Nitro1", {
+			Source = CurrentPacket.Nitrous[1].Parent, 
+			TimeStart = 0.5, 
+			Volume = 1
+		})
+		u23("NitroLoop", {
+			Source = CurrentPacket.Nitrous[1].Parent, 
+			Looped = true, 
+			MaxTime = 30, 
+			Volume = 1, 
+			Delay = 0.3
+		})
+		for v260, v261 in pairs(CurrentPacket.Nitrous) do
+			v261.Enabled = true
+		end
+		RemoteEvent:FireServer("rgnrhv4d")
+	end
+	if LocalPlayerValuesData.Nitro / LocalPlayerValuesData.NitroLastMax <= 0.01 then
+		em.jvyh4sbz(true, true)
+	end
+end
+local function HornOnPressed()
+	local CurrentUnixTimeValue = os.clock()
+	if CurrentUnixTimeValue - LastUnixTime2 < 0.05 then
+		return
+	end
+	LastUnixTime2 = CurrentUnixTimeValue
+	if CurrentPacket and not CurrentPacket.Passenger then
+		local l__Model__263 = CurrentPacket.Model
+		u43(l__Model__263:FindFirstChild("Engine"), true, l__Model__263:GetAttribute("VehicleHornId"), (l__Model__263:GetAttribute("VehicleHornLoopable")))
+		RemoteEvent:FireServer("lt394lj6", true)
+	end
+end
+local function HornOnReleased()
+	if CurrentPacket and not CurrentPacket.Passenger then
+		u43(CurrentPacket.Model:FindFirstChild("Engine"), false)
+		RemoteEvent:FireServer("lt394lj6", false)
+	end
+end
+local VehicleLinkBinder = require(ReplicatedStorage.VehicleLink.VehicleLinkBinder)
+function em.veu2fpa4(Packet)
+	if CharacterUtil.IsCrawling then
+		SetupCrawlingChar()
+	end
+	local l__Type__264 = Packet.Type
+	local l__Make__265 = Packet.Make
+	IsSprinting = false
+	if (not DefaultActions.sprintButton._pressed) == false and DefaultActions.sprintButton._pressState then
+		DefaultActions.sprintButton._pressState()
+	end
+	local v266 = false
+	if Packet.Passenger and Packet.Seat:FindFirstChild("Items") then
+		v266 = true
+	end
+	if not v266 then
+		InventoryItemSystem.unequipAll()
+	end
+	local l__Character__267 = LocalPlayer.Character
+	if not l__Character__267 then
+		return
+	end
+	local l__Humanoid__268 = l__Character__267:FindFirstChild("Humanoid")
+	if not l__Humanoid__268 then
+		return
+	end
+	assert(not Packet.seatMaid, "packet already has seat maid")
+	local v269 = Maid.new()
+	Packet.seatMaid = v269
+	ActionButtonService.setButtonPrimary(DefaultActions.jumpButton, false)
+	ActionButtonService.setButtonEnabled(DefaultActions.punchButton, false)
+	ActionButtonService.setButtonEnabled(DefaultActions.crawlButton, false)
+	ActionButtonService.setButtonEnabled(DefaultActions.sprintButton, false)
+	v269:GiveTask(function()
+		ActionButtonService.setButtonPrimary(DefaultActions.jumpButton, true)
+		ActionButtonService.setButtonEnabled(DefaultActions.punchButton, true)
+		ActionButtonService.setButtonEnabled(DefaultActions.crawlButton, true)
+		ActionButtonService.setButtonEnabled(DefaultActions.sprintButton, true)
+	end)
+	local v270 = VehicleModule.prepareCameraSubject(Packet, useVehicleFollowCamera.defaultValue)
+	if v270 then
+		CurrentCamera.CameraSubject = v270
+		local l__CameraSubject__76 = CurrentCamera.CameraSubject
+		v269:GiveTask(function()
+			CurrentCamera.CameraSubject = l__Humanoid__268
+			CurrentCamera.FieldOfView = 70
+		end)
+	end
+	v269:GiveTask(function()
+		local l__activeCameraController__271 = PlayerCameras.activeCameraController
+		if l__activeCameraController__271 then
+			l__activeCameraController__271:SetCameraToSubjectDistance(15)
+		end
+	end)
+	if not Packet.Passenger then
+		if Packet.Type == "Chassis" or Packet.Type == "Motorcycle" or Packet.Type == "DuneBuggy" or Packet.Make == "Volt" then
+			local v272 = {
+				primary = true, 
+				priority = 1000, 
+				saturateTo = 0, 
+				image = "rbxassetid://7858765663", 
+				keyCodes = { Enum.KeyCode.W, Enum.KeyCode.Up }
+			}
+			function v272.onPressed()
+				Classes.Chassis.setForward(true)
+			end
+			function v272.onReleased()
+				Classes.Chassis.setForward(false)
+			end
+			v269:GiveTask(ActionButtonService.add(v272))
+			v269:GiveTask(ActionButtonService.add({
+				primary = true, 
+				priority = 700, 
+				saturateTo = 0, 
+				image = "rbxassetid://7858764373", 
+				keyCodes = { Enum.KeyCode.S, Enum.KeyCode.Down }, 
+				onPressed = function()
+					Classes[Packet.Type].setBackward(true)
+				end, 
+				onReleased = function()
+					Classes[Packet.Type].setBackward(false)
+				end
+			}))
+			if Packet.Make ~= "Volt" then
+				v269:GiveTask(ActionButtonService.add({
+					priority = 600, 
+					allowTouchSlide = true, 
+					image = "rbxassetid://4939737110", 
+					keyCodes = { Enum.KeyCode.LeftShift, Enum.KeyCode.RightShift, Enum.KeyCode.ButtonX }, 
+					onPressed = function()
+						Classes.Chassis.setHandbrakeEnabled(true)
+					end, 
+					onReleased = function()
+						Classes.Chassis.setHandbrakeEnabled(false)
+					end
+				}))
+			end
+			v269:GiveTask(ActionButtonService.add({
+				priority = 850, 
+				image = "rbxassetid://4939737424", 
+				keyCodes = { Enum.KeyCode.V, Enum.KeyCode.ButtonR1 }, 
+				onPressed = function()
+					RemoteEvent:FireServer("kovfi551", Packet.Model)
+				end
+			}))
+			v269:GiveTask(ActionButtonService.add({
+				priority = 500, 
+				allowTouchSlide = true, 
+				image = "rbxassetid://4939740976", 
+				keyCodes = { Enum.KeyCode.Q, Enum.KeyCode.ButtonL1 }, 
+				onPressed = function()
+					EnableNitrousOnPressed()
+				end, 
+				onReleased = function()
+					ActivateNitrous()
+				end
+			}))
+		elseif Packet.Type == "Heli" then
+			v269:GiveTask(ActionButtonService.add({
+				primary = true, 
+				priority = 1000, 
+				saturateTo = 0, 
+				image = "rbxassetid://4939737716", 
+				keyCodes = { Enum.KeyCode.E, Enum.KeyCode.ButtonR2 }, 
+				onPressed = function()
+					Classes.Heli.setUp(true)
+				end, 
+				onReleased = function()
+					Classes.Heli.setUp(false)
+				end
+			}))
+			v269:GiveTask(ActionButtonService.add({
+				primary = true, 
+				priority = 950, 
+				saturateTo = 0, 
+				image = "rbxassetid://4939738083", 
+				keyCodes = { Enum.KeyCode.Q, Enum.KeyCode.ButtonL2 }, 
+				onPressed = function()
+					Classes.Heli.setDown(true)
+				end, 
+				onReleased = function()
+					Classes.Heli.setDown(false)
+				end
+			}))
+			local v273 = {
+				priority = 700, 
+				image = "rbxassetid://4939738413", 
+				keyCodes = { Enum.KeyCode.L, Enum.KeyCode.ButtonY }
+			}
+			function v273.onPressed()
+				Classes.Heli.toggleHeadlights(Packet)
+			end
+			v269:GiveTask(ActionButtonService.add(v273))
+		end
+		if Packet.Model and Packet.Model:FindFirstChild("Model") and (Packet.Model.Model:FindFirstChild("Headlights") and Packet.Type ~= "Heli") then
+			v269:GiveTask(ActionButtonService.add({
+				priority = 450, 
+				image = "rbxassetid://4939738413", 
+				keyCodes = { Enum.KeyCode.L, Enum.KeyCode.ButtonY }, 
+				onPressed = function()
+					Classes.Chassis.toggleHeadlights()
+				end
+			}))
+		end
+		if Packet.Model and Packet.Model:FindFirstChild("Engine") then
+			v269:GiveTask(ActionButtonService.add({
+				priority = 800, 
+				image = "rbxassetid://4939742186", 
+				keyCodes = { Enum.KeyCode.H, Enum.KeyCode.ButtonL3 }, 
+				onPressed = function()
+					HornOnPressed()
+				end, 
+				onReleased = function()
+					HornOnReleased()
+				end
+			}))
+		end
+		if l__Make__265 == "Ambulance" or l__Make__265 == "Firetruck" or l__Make__265 == "Jeep" or l__Make__265 == "Boxer" then
+			v269:GiveTask(ActionButtonService.add({
+				priority = 400, 
+				image = "rbxassetid://4939741296", 
+				keyCodes = { Enum.KeyCode.G, Enum.KeyCode.ButtonY }, 
+				onPressed = function()
+					Classes.Chassis.runAction(true)
+				end, 
+				onReleased = function()
+					Classes.Chassis.runAction(false)
+				end
+			}))
+		end
+		if Packet.Type == "Chassis" or Packet.Type == "Heli" then
+			if Packet.Missiles and Packet.Rockets then
+				v269:GiveTask(ActionButtonService.add({
+					priority = 350, 
+					image = "rbxassetid://4939740665", 
+					keyCodes = { Packet.Type == "Chassis" and Enum.KeyCode.G or Enum.KeyCode.F, Enum.KeyCode.ButtonX }, 
+					onPressed = function()
+						if Packet.Type == "Chassis" then
+							Classes.Chassis.AttemptFireMissile(CurrentPacket)
+							return
+						end
+						Classes.Heli.attemptFireMissile()
+					end
+				}))
+			end
+			if Packet.Missiles and Packet.Bombs then
+				v269:GiveTask(ActionButtonService.add({
+					priority = 300, 
+					image = "rbxassetid://7893992893", 
+					keyCodes = { Enum.KeyCode.B, Enum.KeyCode.ButtonB }, 
+					onPressed = function()
+						Classes.Heli.attemptDropBomb()
+					end
+				}))
+			end
+		end
+		if Packet.Make == "TowTruck" then
+			v269:GiveTask(ActionButtonService.add({
+				priority = 250, 
+				image = "rbxassetid://4939739616", 
+				keyCodes = { Enum.KeyCode.G, Enum.KeyCode.ButtonY }, 
+				onPressed = function()
+					VehicleLinkBinder:Get((Packet.Model:FindFirstChild("Preset"):FindFirstChild("Crane"):FindFirstChild("MetalHook"))):Unattach()
+				end
+			}))
+		end
+	end
+	if Packet.Model and Packet.Model:FindFirstChild("Winch") then
+		v269:GiveTask(ActionButtonService.add({
+			priority = 750, 
+			image = "rbxassetid://4939739616", 
+			keyCodes = { Enum.KeyCode.G, Enum.KeyCode.ButtonY }, 
+			onPressed = function()
+				Classes.Heli.attemptDropRope()
+			end
+		}))
+	end
+	l__Humanoid__268.Sit = true
+	v269:GiveTask(l__Humanoid__268:GetPropertyChangedSignal("Sit"):Connect(function()
+		if not l__Humanoid__268.Sit and l__Humanoid__268.Health > 0 then
+			l__Humanoid__268.Sit = true
+		end
+	end))
+	v269:GiveTask(function()
+		l__Humanoid__268.Sit = false
+	end)
+	if not Packet.Passenger then
+		for _, v275 in ipairs(Packet.Model:GetChildren()) do
+			local PlayerName = v275:FindFirstChild("PlayerName")
+
+			if PlayerName then
+				local function v278(p92)
+					local v279 = Players:FindFirstChild(p92)
+
+					if not v279 or v279 == LocalPlayer then
+						v269[v275] = nil
+						return
+					end
+
+					local v280 = Maid.new()
+					v269[v275] = v280
+					local l__Humanoid__281 = v279.Character:FindFirstChild("Humanoid")
+
+					if l__Humanoid__281 then
+						l__Humanoid__281.Sit = true
+
+						v280:GiveTask(l__Humanoid__281:GetPropertyChangedSignal("Sit"):Connect(function()
+							if not l__Humanoid__281.Sit and l__Humanoid__281.Health > 0 then
+								l__Humanoid__281.Sit = true
+							end
+						end))
+					end
+				end
+
+				v278(PlayerName.Value)
+				v269:GiveTask(PlayerName.Changed:Connect(v278))
+			end
+		end
+
+	end
+	local v282 = Classes[l__Make__265]
+	if v282 and v282.vehicleEnter then
+		v282.vehicleEnter(Packet)
+	elseif Packet.Type == "Chassis" then
+		Classes.Chassis.VehicleEnter(Packet)
+	elseif Packet.Type == "Heli" then
+		Classes.Heli.VehicleEnter(Packet)
+	elseif Packet.Type == "Motorcycle" or Packet.Type == "DuneBuggy" then
+		Classes.Chassis2.VehicleEnter(Packet)
+	elseif Packet.Type == "Custom" and Packet.Make == "Volt" then
+		Classes.Volt.VehicleEnter(Packet)
+	end
+	if Packet.Passenger then
+		Packet.Nitro = false
+	end
+	CurrentPacket = Packet
+	if CurrentPacket.Seats ~= nil then
+		local v283 = VehicleSystem.GetPlayerSeat(CurrentPacket, LocalPlayer)
+		if v283 then
+			CurrentPacket.Passenger = v283.Driver ~= true
+		end
+	end
+	VehicleModule.OnVehicleEntered:Fire(Packet, Packet.Passenger)
+end
+VehicleModule.OnVehicleEntered:Connect(function(Packet)
+	local seatMaid = Packet.seatMaid
+	if not Packet.Passenger then
+		local function v285(p94)
+			if not p94 then
+				seatMaid.sirensButton = nil
+				return
+			end
+			seatMaid.sirensButton = ActionButtonService.add({
+				priority = 450, 
+				image = "rbxassetid://4939739355", 
+				keyCodes = { Enum.KeyCode.F, Enum.KeyCode.ButtonB }, 
+				onPressed = function()
+					Classes.Chassis.toggleSirens()
+				end
+			})
+		end
+		v285(nil)
+		if Packet.Model and Packet.Model:FindFirstChild("Model") then
+			seatMaid:GiveTask(RxInstanceUtils.observeOneChildNamed(Packet.Model.Model, "Lights", v285))
+		end
+	end
+	if not Packet.Passenger then
+		local function v286(p95)
+			if not p95 then
+				seatMaid.camToggleButton = nil
+				return
+			end
+			seatMaid.camToggleButton = ActionButtonService.add({
+				priority = 550, 
+				image = "rbxassetid://4939741662", 
+				keyCodes = { Enum.KeyCode.C, Enum.KeyCode.ButtonR3 }, 
+				onPressed = function()
+					Classes.Chassis.toggleInsideCamera()
+				end
+			})
+		end
+		v286(nil)
+		seatMaid:GiveTask(RxInstanceUtils.observeOneChildNamed(Packet.Model, "InsideCamera", v286))
+	end
+end)
+function em.VehicleLeave()
+	if not CurrentPacket then
+		return
+	end
+	local l__Type__287 = CurrentPacket.Type
+	local l__Make__288 = CurrentPacket.Make
+	if CurrentPacket.Nitro then
+		ActivateNitrous()
+	end
+	CurrentPacket.Nitro = false
+	if CurrentPacket.Nitrous then
+		for v289, v290 in pairs(CurrentPacket.Nitrous) do
+			v290.Enabled = false
+		end
+	end
+	if CurrentPacket.IsCameraLocked then
+		Classes.Chassis.toggleInsideCamera(CurrentPacket)
+	end
+	local v291 = Classes[l__Make__288]
+	if v291 and v291.vehicleLeave then
+		v291.vehicleLeave(CurrentPacket)
+	elseif l__Type__287 == "Chassis" then
+		Classes.Chassis.VehicleLeave(CurrentPacket)
+	elseif l__Type__287 == "Heli" then
+		Classes.Heli.VehicleLeave(CurrentPacket)
+	elseif l__Type__287 == "Motorcycle" or l__Type__287 == "DuneBuggy" then
+		Classes.Chassis2.VehicleLeave(CurrentPacket)
+	elseif l__Type__287 == "Custom" and l__Make__288 == "Volt" then
+		Classes.Volt.VehicleLeave(CurrentPacket)
+	end
+	CurrentPacket.seatMaid:Destroy()
+	CurrentPacket.seatMaid = nil
+	local v292 = ItemSystem.GetLocalEquipped()
+	if v292 and v292.IsLeaning then
+		v292:SetLeaning(false)
+	end
+	VehicleModule.OnVehicleExited:Fire(CurrentPacket, CurrentPacket.Passenger)
+	em.o6ofmct8()
+	if TouchEnabled then
+		IsSprinting = true
+		if (not DefaultActions.sprintButton._pressed) == true and DefaultActions.sprintButton._pressState then
+			DefaultActions.sprintButton._pressState()
+		end
+	end
+	CurrentPacket = nil
+end
+VehicleModule.OnVehicleJumpExited:Connect(function(p96)
+	local Character = LocalPlayer.Character
+	if Character then
+		for v294, v295 in pairs(Character:GetDescendants()) do
+			if v295:IsA("JointInstance") then
+				local l__JointC0__296 = v295:FindFirstChild("JointC0")
+				if l__JointC0__296 then
+					v295.C0 = l__JointC0__296.Value
+				end
+				local l__JointC1__297 = v295:FindFirstChild("JointC1")
+				if l__JointC1__297 then
+					v295.C1 = l__JointC1__297.Value
+				end
+			end
+		end
+	end
+	local l__seatMaid__298 = p96.seatMaid
+	if l__seatMaid__298 then
+		task.defer(l__seatMaid__298.DoCleaning, l__seatMaid__298)
+	end
+	if Character then
+		local l__Humanoid__299 = Character:FindFirstChild("Humanoid")
+		if l__Humanoid__299 and Character.PrimaryPart then
+			l__Humanoid__299.Sit = true
+			local u77 = l__Humanoid__299:GetPropertyChangedSignal("Sit"):Connect(function()
+				if not l__Humanoid__299.Sit then
+					l__Humanoid__299.Sit = true
+				end
+			end)
+			task.delay(0.3, function()
+				u77:Disconnect()
+				l__Humanoid__299.Sit = false
+				l__Humanoid__299:ChangeState(Enum.HumanoidStateType.GettingUp)
+			end)
+		end
+	end
+	if p96.SeatWeld then
+		p96.SeatWeld:Destroy()
+		p96.SeatWeld = nil
+	end
+	local l__BoundingBox__300 = p96.Model:FindFirstChild("BoundingBox")
+	if Character then
+		local v301 = 0
+		if p96.Model and l__BoundingBox__300 then
+			v301 = Character.PrimaryPart.CFrame:ToObjectSpace(l__BoundingBox__300.CFrame * CFrame.new(0, l__BoundingBox__300.Size.Y * 0.5, 0)).Y
+		end
+		Character:SetPrimaryPartCFrame(Character.PrimaryPart.CFrame + Vector3.new(0, v301 + 6, 0))
+	end
+end)
+function em.a0ft2oli(Packet)
+	if not CurrentPacket then
+		return
+	end
+	for v302, v303 in pairs(Packet) do
+		CurrentPacket[v302] = v303
+	end
+end
+function em.d9ev824w()
+	if not CurrentPacket then
+		return
+	end
+	if CurrentPacket.Type ~= "Heli" then
+		return
+	end
+	Classes.Heli.FallOutOfSky(CurrentPacket)
+end
+function em.gcwzdlih(p98, p99)
+	if CurrentPacket ~= nil and not CurrentPacket.Passenger and CurrentPacket.Model == p98 then
+		CurrentPacket.TiresLastPop = p99
+		return true
+	end
+	for v304, v305 in pairs(AnyPacket) do
+		if v305.Model == p98 then
+			v305.TiresLastPop = p99
+			return true
+		end
+	end
+end
+function em.ub6k8bg3()
+	if not CurrentPacket then
+		error("no vehicle packet")
+		return
+	end
+	if CurrentPacket.Type == "Chassis" then
+		Classes.Chassis.SpinOut(CurrentPacket)
+		return
+	end
+	error(("Cannot spin-out vehicle type: %s"):format(CurrentPacket.Type))
+end
+function em.r95stj5g(p100)
+	local v306 = Instance.new("Part")
+	v306.Name = "CrashParticles"
+	v306.Transparency = 1
+	v306.Anchored = true
+	v306.CanCollide = false
+	v306.CFrame = p100.CFrame + p100.Parent.Engine.CFrame.LookVector * 5
+	v306.Size = p100.Size
+	v306.Parent = workspace
+	local v307 = ReplicatedStorage.Resource.CrashParticle:Clone()
+	v307.Parent = v306
+	v307:Emit(8)
+	wait()
+	v307:Emit(8)
+	wait()
+	v307:Emit(8)
+	wait()
+	game.Debris:AddItem(v306, 5)
+end
+function em.o6ofmct8()
+	local l__Character__308 = LocalPlayer.Character
+	if not l__Character__308 then
+		return
+	end
+	local l__PrimaryPart__309 = l__Character__308.PrimaryPart
+	if not l__PrimaryPart__309 then
+		return
+	end
+	l__PrimaryPart__309.Velocity = Vector3.new()
+	l__PrimaryPart__309.RotVelocity = Vector3.new()
+end
+function em.vmk42ers()
+	MainGui.FaultyAction.Visible = true
+	wait(4)
+	MainGui.FaultyAction.Visible = false
+end
+local LocalTagManager = {}
+local TaggedInstances = {}
+function LocalTagManager.AddPart(p101, p102, p103, p104)
+	local v311 = {
+		Part = p101, 
+		Distance = p102, 
+		f = p103, 
+		Meta = p104
+	}
+	table.insert(TaggedInstances, v311)
+	return v311
+end
+function LocalTagManager.RemoveTag(p105)
+	for v312 = #TaggedInstances, 1, -1 do
+		if TaggedInstances[v312].Meta.Tag == p105 then
+			table.remove(TaggedInstances, v312)
+			return true
+		end
+	end
+	return false
+end
+local u79 = {}
+local u80 = {}
+function LocalTagManager.UpdateInterest(p106)
+	local l__Character__313 = LocalPlayer.Character
+	if l__Character__313 then
+		local l__PrimaryPart__314 = l__Character__313.PrimaryPart
+		if l__PrimaryPart__314 then
+			local l__Humanoid__315 = l__Character__313:FindFirstChild("Humanoid")
+			if l__Humanoid__315 and not (l__Humanoid__315.Health <= 0) then
+				LocalTagManager.UpdateInterest(l__PrimaryPart__314.Position)
+			end
+		end
+	end
+	u79 = {}
+	u80 = {}
+	for v316 = #TaggedInstances, 1, -1 do
+		if not TaggedInstances[v316].Part then
+			table.remove(TaggedInstances, v316)
+		end
+	end
+
+	for v319, v320 in pairs(TaggedInstances) do
+		v320.Center = v320.Part.Position
+		local l__magnitude__321 = (v320.Center - p106).magnitude
+		v320.Sort = l__magnitude__321
+		local v322 = l__magnitude__321 < v320.Distance
+
+		if v320.Locked then
+			v322 = true
+		end
+
+		local l__Loaded__323 = v320.Loaded
+
+		if v322 and not l__Loaded__323 then
+			table.insert(u79, v320)
+		elseif not v322 and l__Loaded__323 then
+			table.insert(u80, v320)
+		end
+	end
+
+end
+local function RunTagInsert(p107, p108)
+	table.insert(Threads, {
+		t = 0, 
+		i = p107, 
+		c = p108
+	})
+end
+local function u84()
+	while #u79 > 0 do
+		local v324 = table.remove(u79, 1)
+		v324.Loaded = true
+		v324:f(v324.Loaded)	
+	end
+	while #u80 > 0 do
+		local v325 = table.remove(u80)
+		v325.Loaded = false
+		v325:f(v325.Loaded)	
+	end
+end
+function LocalTagManager.Run(p109)
+	RunTagInsert(p109, u84)
+end
+LocalTagManager.Run(0.1)
+local ButtonY = ReplicatedStorage.Resource.ButtonY:Clone()
+local u85 = {}
+local u86 = function(p110, p111)
+	if p111 then
+		--table.insert(u85, Math.BinaryFind(u85, p110.Sort), p110)
+	else
+		for v326 = #u85, 1, -1 do
+			if u85[v326] == p110 then
+				table.remove(u85, v326)
+				break
+			end
+		end
+	end
+	local v327 = u85[1]
+	if not v327 or Enum.UserInputType.Gamepad1 ~= nil then
+		ButtonY.Parent = nil
+		return
+	end
+	ButtonY.Parent = v327.Meta.Button
+end
+local u81 = function(p112, p113, p114, p115)
+	return LocalTagManager.AddPart(p112, p113, u86, {
+		Callback = p114, 
+		Tag = p115
+	})
+end
+u82 = function(p116)
+	local v328 = false
+	if p116.UserInputType == Enum.UserInputType.Gamepad1 then
+		if p116.KeyCode == Enum.KeyCode.ButtonY then
+			v328 = true
+		end
+	elseif p116.UserInputType == Enum.UserInputType.Keyboard and p116.KeyCode == Enum.KeyCode.Y then
+		v328 = true
+	end
+	if not v328 then
+		return
+	end
+	local v329 = u85[1]
+	if not v329 then
+		return
+	end
+	for v330, v331 in pairs(u85) do
+		if v331.Meta.Button == v329.Meta.Button then
+			coroutine.resume(coroutine.create(function()
+				v331.Meta.Callback(LocalPlayer)
+			end))
+		end
+	end
+end
+local u78real = function(p117, p118)
+	if p118 then
+		return
+	end
+	u82(p117)
+end
+UserInputService.InputBegan:Connect(u78real)
+DoorThing = function(DoorPacket)
+	local l__Model__332 = DoorPacket.Model
+	local v333 = l__Model__332.Model:FindFirstChild("light")
+	if not v333 then
+		v333 = l__Model__332:FindFirstChild("Light")
+		if v333 and v333:IsA("ObjectValue") then
+			if v333.Value then
+				v333 = v333.Value.Parent:FindFirstChild("light")
+			else
+				v333 = nil
+			end
+		end
+	end
+	local l__Open__87 = DoorPacket.State.Open
+	local l__OpenCFrame__88 = DoorPacket.OpenCFrame
+	local l__ClosedCFrame__89 = DoorPacket.ClosedCFrame
+	if DoorPacket.State.NoAnimate then
+		DoorPacket.State.NoAnimate = false
+		return (function()
+			if l__Open__87 then
+				l__Model__332.Model:SetPrimaryPartCFrame(l__OpenCFrame__88)
+				return
+			end
+			l__Model__332.Model:SetPrimaryPartCFrame(l__ClosedCFrame__89)
+			if v333 then
+				v333.BrickColor = BrickColor.new("Dusty Rose")
+			end
+		end)()
+	end
+	if l__Open__87 and v333 then
+		v333.BrickColor = BrickColor.new("Bright green")
+	end
+	local u90 = 0
+	local l__Duration__91 = DoorPacket.Settings.Duration
+	local u92 = nil
+	u92 = RunService.Stepped:connect(function(p120, p121)
+		if l__OpenCFrame__88 == nil then return end
+		u90 = u90 + p121 * 1 / l__Duration__91
+		local v334 = u90 / 1 * 2
+		local v335 = 0.5 * v334 * v334 + 0
+		if v334 < 1 then
+			v335 = 0.5 * v334 * v334 + 0
+		else
+			v335 = -0.5 * ((v334 - 1) * (v334 - 3) - 1) + 0
+		end
+		if not l__Open__87 then
+			v335 = 1 - v335
+		end
+		l__Model__332.Model:SetPrimaryPartCFrame(l__ClosedCFrame__89:lerp(l__OpenCFrame__88, v335))
+		if u90 >= 1 then
+			u92:disconnect()
+			if not l__Open__87 then
+				l__Model__332.Model:SetPrimaryPartCFrame(l__ClosedCFrame__89)
+				if v333 then
+					v333.BrickColor = BrickColor.new("Dusty Rose")
+				end
+				return
+			end
+		else
+			return
+		end
+		l__Model__332.Model:SetPrimaryPartCFrame(l__OpenCFrame__88)
+	end)
+end
+DoorFun = function(p122)
+	local l__Model__336 = p122.Model
+	local v337 = l__Model__336.Model:FindFirstChild("Light")
+	if not v337 then
+		v337 = l__Model__336:FindFirstChild("Light")
+		if v337 and v337:IsA("ObjectValue") then
+			if v337.Value then
+				v337 = v337.Value.Parent:FindFirstChild("light")
+			else
+				v337 = nil
+			end
+		end
+	end
+	local l__Open__93 = p122.State.Open
+	local l__ClosedCFrame__94 = p122.ClosedCFrame
+	local l__HingeRelativeCFrame__95 = p122.HingeRelativeCFrame
+	local u96 = Vector3.new(0, math.pi * 0.55 * (p122.State.Direction * p122.Direction), 0)
+	local function v338()
+		if not l__Open__93 then
+			l__Model__336.Model:SetPrimaryPartCFrame(l__ClosedCFrame__94)
+			if v337 then
+				v337.BrickColor = BrickColor.new("Dusty Rose")
+			end
+			return
+		end
+		l__Model__336.Model:SetPrimaryPartCFrame(l__ClosedCFrame__94 * l__HingeRelativeCFrame__95 * Math.CFrameFromAxisAngle(u96) * l__HingeRelativeCFrame__95:inverse())
+	end
+	if p122.State.NoAnimate then
+		p122.State.NoAnimate = false
+		return v338()
+	end
+	if l__Open__93 and v337 then
+		v337.BrickColor = BrickColor.new("Bright green")
+	end
+	local u97 = 0
+	local l__Duration__98 = p122.Settings.Duration
+	local u99 = nil
+	u99 = RunService.Stepped:connect(function(p123, p124)
+		u97 = u97 + p124 * 1 / l__Duration__98
+		local v339 = u97 / 1 * 2
+		local v340 = 0.5 * v339 * v339 + 0
+		if v339 < 1 then
+			v340 = 0.5 * v339 * v339 + 0
+		else
+			v340 = -0.5 * ((v339 - 1) * (v339 - 3) - 1) + 0
+		end
+		if not l__Open__93 then
+			v340 = 1 - v340
+		end
+		l__Model__336.Model:SetPrimaryPartCFrame(l__ClosedCFrame__94 * l__HingeRelativeCFrame__95 * Math.CFrameFromAxisAngle(Vector3.new(0, 0, 0):Lerp(u96, v340)) * l__HingeRelativeCFrame__95:inverse())
+		if not (u97 >= 1) then
+			return
+		end
+		u99:disconnect()
+		return v338()
+	end)
+end
+local function u100(p125, p126, p127, p128)
+	if p125.Settings.ServerOnly then
+		return false
+	end
+	if p125.Settings.Locked then
+		return false
+	end
+	local v341 = false
+	if p127:FindFirstChild("Humanoid").Sit or p127:FindFirstChild("InVehicle") then
+		v341 = true
+	end
+	local v342 = false
+	if p125.Settings.Vehicle and not p125.Settings.Character then
+		v342 = v341
+	elseif p125.Settings.Character and not p125.Settings.Vehicle then
+		v342 = not v341
+	elseif p125.Settings.Character and p125.Settings.Vehicle then
+		v342 = true
+	end
+	if p128 then
+		v342 = true
+	end
+	local v343 = PlayerUtils.hasKey()
+	if p125.Settings.Key then
+		v342 = v342 or v343
+	end
+	if p125.Settings.Team then
+		v342 = v342 and p126.TeamValue.Value == p125.Settings.Team
+	end
+	if p125.Settings.TeamBlacklist then
+		v342 = v342 and p126.TeamValue.Value ~= p125.Settings.TeamBlacklist
+	end
+	print(v342)
+	return v342
+end
+local function u101(p129)
+	if p129.Settings.SequenceRequireState and p129.State.Open then
+		return
+	end
+	if p129.Resolved then
+		p129.State.Open = true
+		if p129.OpenFun then
+			p129:OpenFun()
+		end
+	else
+		p129.AwaitingDoorOpen = true
+		p129.AwaitingDoorClose = false
+	end
+	RemoteEvent:FireServer("vyks4qpf", p129)
+end
+local u102 = {}
+local function v344(p130)
+	local u103 = 0
+	table.insert(u102, {
+		Part = p130, 
+		Fun = function(p131)
+			if tick() - u103 < 1 then
+				return
+			end
+			u103 = tick()
+			RemoteEvent:FireServer("b1q6wcdy", p130)
+		end
+	})
+end
+for v348, v349 in pairs(CollectionService:GetTagged("TouchTrigger")) do
+	v344(v349)
+end
+
+CollectionService:GetInstanceAddedSignal("TouchTrigger"):Connect(v344)
+CollectionService:GetInstanceRemovedSignal("TouchTrigger"):Connect(function(p132)
+	for v350 = #u102, 1, -1 do
+		if u102[v350].Part == p132 then
+			table.remove(u102, v350)
+			break
+		end
+	end
+	return true
+end)
+local function v351(p133)
+	local l__SewerHatch__105 = p133:FindFirstChild("SewerHatch")
+	local function v352(p134, p135)
+		if p135 then
+			RemoteEvent:FireServer("fmnkgcvy", "SewerHatch", l__SewerHatch__105)
+		end
+		return true
+	end
+	if p133:FindFirstChild("FromTop").Value then
+		ModuleUI.CircleAction.Add({
+			Part = l__SewerHatch__105, 
+			Name = "Pull Open", 
+			Timed = true, 
+			Duration = 3, 
+			Dist = 10, 
+			Callback = v352,
+			_lastUpdateCheck = 0
+		}, l__SewerHatch__105)
+	end
+	table.insert(u102, {
+		Tag = l__SewerHatch__105, 
+		Part = p133:FindFirstChild("Touch"), 
+		Fun = function()
+			return v352(nil, true)
+		end
+	})
+end
+
+for v356, v357 in pairs(CollectionService:GetTagged("SewerHatch")) do
+	v351(v357)
+end
+
+CollectionService:GetInstanceAddedSignal("SewerHatch"):Connect(v351)
+CollectionService:GetInstanceRemovedSignal("SewerHatch"):Connect(function(p136)
+	local l__SewerHatch__358 = p136:FindFirstChild("SewerHatch")
+	ModuleUI.CircleAction.Remove(l__SewerHatch__358)
+	for v359 = #u102, 1, -1 do
+		if u102[v359].Tag == l__SewerHatch__358 then
+			table.remove(u102, v359)
+			return
+		end
+	end
+end)
+u104 = function()
+	local l__Character__360 = LocalPlayer.Character
+	if not l__Character__360 then
+		return
+	end
+	local l__PrimaryPart__361 = l__Character__360.PrimaryPart
+	if not l__PrimaryPart__361 then
+		return
+	end
+	local l__Position__362 = l__PrimaryPart__361.Position
+	local v363 = Vector3.new(4, 6, 4)
+	for v364, v365 in pairs(u102) do
+		if Math.IsPointInPrism(l__Position__362, v365.Part.CFrame, v365.Part.Size + v363) then
+			v365.Fun(l__PrimaryPart__361)
+		end
+	end
+end
+RunTagInsert(0.16666666666666666, u104)
+local u106 = {}
+local function u107(p137)
+	assert(p137.Resolved)
+	local u108 = tick()
+	local l__Model__109 = p137.Model
+	local u110 = tick()
+	local function u111(p138)
+		local v366 = tick()
+		local l__Character__367 = LocalPlayer.Character
+		if not l__Character__367 then
+			return
+		end
+		if not l__Character__367.PrimaryPart then
+			return
+		end
+		if v366 - u108 < 0.1 then
+			return
+		end
+		u108 = v366
+		if p137.State.Open then
+			return
+		end
+		if os.time() - p137.State.CloseTime < p137.Settings.Duration then
+			return
+		end
+		local v368 = u100(p137, LocalPlayer, l__Character__367, p138)
+		if p137.Settings.Character then
+			if v368 then
+				u23("Door", {
+					Source = l__Model__109.Closed, 
+					TimeStart = 1, 
+					Volume = 0.2
+				})
+			else
+				u23("Door", {
+					Source = l__Model__109.Closed, 
+					TimeStart = 0, 
+					MaxTime = 0.6, 
+					Volume = 0.2
+				})
+			end
+		end
+		if not v368 then
+			return
+		end
+		if p137.Settings.Type == "Swing" then
+			local v369 = 1
+			if (p137.Model.Closed.Position - l__Character__367.HumanoidRootPart.Position).unit:Dot(p137.Model.Closed.CFrame.lookVector) > 0 then
+				v369 = 1
+			else
+				v369 = -1
+			end
+			p137.State.Direction = v369
+		end
+		u101(p137)
+	end
+	local function v370(p139)
+		local v371 = tick()
+		if v371 - u110 < 0.03333333333333333 then
+			return
+		end
+		u110 = v371
+		u111(LocalPlayer)
+	end
+	local function v372(p140)
+		if p140 ~= LocalPlayer then
+			return
+		end
+		u111(LocalPlayer)
+	end
+
+	for v376, v377 in pairs(l__Model__109:GetChildren()) do
+		if v377:IsA("BasePart") and v377.Name == "Touch" then
+			table.insert(u102, {
+				Tag = p137.Tag, 
+				Part = v377, 
+				Fun = v370
+			})
+		elseif v377:IsA("ObjectValue") and v377.Name == "Touch" then
+			table.insert(u102, {
+				Tag = p137.Tag, 
+				Part = v377.Value, 
+				Fun = v370
+			})
+		elseif v377:IsA("ObjectValue") and v377.Name == "Button" then
+			local v378 = v377.Value
+
+			if v378 then
+				if v378:IsA("Part") then
+					v378 = v378.Parent
+				end
+				if v378:IsA("Model") then
+					v378 = v378:FindFirstChild("Click").ClickDetector
+				end
+				u81(v378.Parent, v378.MaxActivationDistance, v372).Meta.Button = v378.Parent
+				v378.MouseClick:Connect(v372)
+			else
+				warn(("Model %s is missing button value."):format(l__Model__109:GetFullName()))
+			end
+		end    
+	end
+
+end
+local function v379(p141)
+	local l__Value__380 = p141:WaitForChild("Tag", 5).Value
+	for v381, v382 in pairs(u106) do
+		if v382.Tag == l__Value__380 then
+			v382.Resolved = true
+			v382.Model = p141
+			if v382.AwaitingDoorOpen or v382.State.Open then
+				if v382.Resolved then
+					v382.State.NoAnimate = true
+					v382.State.Open = true
+					if v382.OpenFun then
+						v382:OpenFun()
+					end
+				else
+					v382.AwaitingDoorOpen = true
+					v382.AwaitingDoorClose = false
+				end
+			elseif v382.AwaitingDoorClose or not v382.State.Open then
+				if v382.Resolved then
+					v382.State.NoAnimate = true
+					v382.State.Open = false
+					v382.State.CloseTime = os.time()
+					if v382.CloseFun then
+						v382:CloseFun()
+					end
+				else
+					v382.AwaitingDoorOpen = false
+					v382.AwaitingDoorClose = true
+				end
+			end
+			u107(v382)
+			return true
+		end
+	end
+	return false
+end
+local function u112(p142)
+	assert(not p142.Resolved)
+	local l__Tag__383 = p142.Tag
+	for v384 = #u102, 1, -1 do
+		if u102[v384].Tag == l__Tag__383 then
+			table.remove(u102, v384)
+		end
+	end
+	LocalTagManager.RemoveTag(l__Tag__383)
+end
+
+for v388, v389 in pairs(CollectionService:GetTagged("Door")) do
+	v379(v389)
+end
+CollectionService:GetInstanceAddedSignal("Door"):Connect(v379)
+CollectionService:GetInstanceRemovedSignal("Door"):Connect(function(p143)
+	for v390, v391 in pairs(u106) do
+		if v391.Model == p143 then
+			v391.Resolved = false
+			v391.Model = nil
+			u112(v391)
+			return true
+		end
+	end
+	return false
+end)
+local u113 = {}
+local function u114(p144, p145)
+	assert(p144.Tag)
+	local l__Tag__392 = p144.Tag
+	
+	local v394 = nil
+	local v397 = false
+
+	for v395, v396 in pairs(u106) do
+		if v396.Tag == l__Tag__392 then
+			v397 = v396
+			break
+		end
+		v394 = v395
+	end
+
+	if not v397 then
+		if p144.Settings.Type == "Swing" then
+			p144.OpenFun = DoorFun
+			p144.CloseFun = DoorFun
+		elseif p144.Settings.Type == "Slide" then
+			p144.OpenFun = DoorThing
+			p144.CloseFun = DoorThing
+		end
+		if p144.State.Open then
+			p144.AwaitingDoorOpen = true
+		else
+			p144.AwaitingDoorClose = true
+		end
+		table.insert(u106, p144)
+	else
+		p144 = v397
+		p144.Settings = p144.Settings
+		p144.AwaitingDoorOpen = p144.AwaitingDoorOpen
+		p144.AwaitingDoorClose = p144.AwaitingDoorClose
+	end
+	local v398 = u113[p144.Tag]
+	u113[p144.Tag] = nil
+	if v398 then
+		p144.State = v398.State
+		p144.Settings = v398.Settings
+		p144.AwaitingDoorOpen = v398.AwaitingDoorOpen
+		p144.AwaitingDoorClose = v398.AwaitingDoorClose
+	end
+	if not p145 then
+		for v402, v403 in pairs(CollectionService:GetTagged("Door")) do
+			v379(v403)
+		end
+
+	end
+end
+function em.a2scbo13(p146)
+	local l__Tag__404 = p146.Tag
+	local v406 = nil
+	local v409 = false
+
+	for v407, v408 in pairs(u106) do
+		if v408.Tag == l__Tag__404 then
+			v409 = v408
+			break
+		end
+		v406 = v407
+	end
+
+	if not v409 then
+		p146.AwaitingDoorOpen = true
+		p146.AwaitingDoorClose = false
+		u113[l__Tag__404] = p146
+		return
+	end
+	v409.State = p146.State
+	v409.Settings = p146.Settings
+	if v409.Resolved then
+		v409.State.Open = true
+		if not v409.OpenFun then
+			return
+		end
+	else
+		v409.AwaitingDoorOpen = true
+		v409.AwaitingDoorClose = false
+		return
+	end
+	v409:OpenFun()
+end
+function em.m0pxawy2(p147)
+	local l__Tag__410 = p147.Tag
+	local v412 = nil
+	local v415 = false
+
+	for v413, v414 in pairs(u106) do
+		if v414.Tag == l__Tag__410 then
+			v415 = v414
+			break
+		end
+		v412 = v413
+	end
+
+	if not v415 then
+		p147.AwaitingDoorOpen = false
+		p147.AwaitingDoorClose = true
+		u113[l__Tag__410] = p147
+		return
+	end
+	v415.State = p147.State
+	v415.Settings = p147.Settings
+	if v415.Resolved then
+		v415.State.Open = false
+		v415.State.CloseTime = os.time()
+		if not v415.CloseFun then
+			return
+		end
+	else
+		v415.AwaitingDoorOpen = false
+		v415.AwaitingDoorClose = true
+		return
+	end
+	v415:CloseFun()
+end
+function em.zf6ngqq9(p148)
+	u114(p148)
+end
+local function u115(p149)
+	for v416, v417 in next, p149, nil do
+		u114(v417, true)
+	end
+
+	for v421, v422 in next, CollectionService:GetTagged("Door") do
+		v379(v422)
+	end
+
+end
+function em.pyn29ydg(p150)
+	u115(p150)
+end
+local robberyMusic = {
+	name = "robberyMusic", 
+	title = "Robbery Music", 
+	type = gameSettingType.Slider, 
+	defaultValue = 100, 
+	order = 10, 
+	min = 0, 
+	max = 100, 
+	step = 1, 
+	onChanged = nil,
+	textMap = function(p151)
+		return ("%d%%"):format(p151)
+	end,
+}
+GameSettingsService.add(robberyMusic)
+local function v424(p152)
+	SoundService.RobberyMusic.Volume = math.clamp(p152 / 100, 0, 1)
+end
+v424(robberyMusic.defaultValue)
+robberyMusic.onChanged:Connect(v424)
+local otherRadios = {
+	name = "otherRadios", 
+	title = "Other Radios", 
+	type = gameSettingType.Slider, 
+	defaultValue = 100, 
+	order = 11, 
+	min = 0, 
+	max = 100, 
+	step = 1, 
+	onChanged = nil,
+	textMap = function(p153)
+		return ("%d%%"):format(p153)
+	end
+}
+GameSettingsService.add(otherRadios)
+local function v426(p154)
+	SoundService.OtherRadios.Volume = math.clamp(p154 / 100, 0, 1)
+end
+v426(otherRadios.defaultValue)
+otherRadios.onChanged:Connect(v426)
+local lightShadows = {
+	name = "lightShadows", 
+	title = "Light Shadows", 
+	type = gameSettingType.Checkbox, 
+	defaultValue = true, 
+	noSave = true, 
+	onChanged = nil,
+	order = 500
+}
+GameSettingsService.add(lightShadows)
+local function ChangeLightShadows(p155)
+	for _, v430 in ipairs(workspace:GetDescendants()) do
+		if v430:IsA("Light") then
+			v430.Shadows = p155
+		end
+	end
+
+	for _, v433 in ipairs(ReplicatedStorage:GetDescendants()) do
+		if v433:IsA("Light") then
+			v433.Shadows = p155
+		end
+	end
+
+end
+ChangeLightShadows(lightShadows.defaultValue)
+lightShadows.onChanged:Connect(ChangeLightShadows)
+local sunShadows = {
+	name = "sunShadows", 
+	title = "Sun Shadows", 
+	type = gameSettingType.Checkbox, 
+	defaultValue = true, 
+	noSave = true, 
+	onChanged = nil,
+	order = 510
+}
+GameSettingsService.add(sunShadows)
+local function v436(p156)
+	game:GetService("Lighting").GlobalShadows = p156
+end
+v436(sunShadows.defaultValue)
+sunShadows.onChanged:Connect(v436)
+local WorldUnloadConsts = require(ReplicatedStorage.WorldUnload.WorldUnloadConsts)
+local HumanoidUnloadConsts = require(ReplicatedStorage.HumanoidUnload.HumanoidUnloadConsts)
+local DestructibleConsts = require(ReplicatedStorage.Game.Destructible.DestructibleConsts)
+local lodMaxDist = {
+	name = "lodMaxDist", 
+	title = "Level of Detail Dist", 
+	type = gameSettingType.Slider, 
+	defaultValue = 1, 
+	order = 20, 
+	min = 0.5, 
+	max = 2, 
+	step = 0.1, 
+	onChanged = nil,
+	textMap = function(p157)
+		return ("%.1fx"):format(p157)
+	end
+}
+GameSettingsService.add(lodMaxDist)
+local DestructibleConsts = DestructibleConsts
+local function v441(p158)
+	WorldUnloadConsts.MAX_DIST_TO_LOAD = WorldUnloadConsts.MAX_DIST_TO_LOAD * p158
+	HumanoidUnloadConsts.MAX_DIST_TO_LOAD = HumanoidUnloadConsts.MAX_DIST_TO_LOAD * p158
+	DestructibleConsts.MAX_DIST_TO_LOAD = DestructibleConsts.MAX_DIST_TO_LOAD * p158
+end
+v441(lodMaxDist.defaultValue)
+lodMaxDist.onChanged:Connect(v441)
+testu116 = function()
+	return (""):sub(-1, 1)
+end
+testu116()
+
+u116 = {}
+if isStudio then
+	if isStudio then
+		if Settings.Test.Ambient then
+			for i, v in pairs(Settings.AmbientIds) do
+				local v442 = Instance.new("Sound")
+				v442.SoundId = "rbxassetid://" .. v
+				v442.Name = i
+				v442.Looped = true
+				v442.SoundGroup = SoundService.Ambient
+				v442.Parent = SoundService.Ambient
+				u116[i] = v442
+			end
+		end
+	end
+
+else
+	for i, v in pairs(Settings.AmbientIds) do
+		local v442 = Instance.new("Sound")
+		v442.SoundId = "rbxassetid://" .. v
+		v442.Name = i
+		v442.Looped = true
+		v442.SoundGroup = SoundService.Ambient
+		v442.Parent = SoundService.Ambient
+		u116[i] = v442
+	end
+
+end
+u118 = function(p159)
+	local v444 = nil
+
+	for v445, v446 in pairs(u116) do
+		local v447 = p159[v445] and 0
+
+		if not v446.IsPlaying and v447 > 0.01 then
+			v446:Play()
+		elseif v446.IsPlaying and v447 <= 0.01 then
+			v446:Stop()
+		end
+
+		v446.Volume = v447
+	end
+
+end
+u118(SomeRandomLerp(Settings.Ambient.Day, Settings.Ambient.Day, 1))
+local MinimapService = require(ReplicatedStorage.App.MinimapService)
+local UpdateMiniMapColor = function(p160, p161)
+	local v448 = nil
+	local l__Main__449 = PlayerGui:FindFirstChild("Main")
+	if l__Main__449 then
+		v448 = l__Main__449.Frame.Vig
+	end
+	local u122 = os.clock()
+	local u123 = 0
+	local u124 = nil
+	u124 = RunService.Heartbeat:connect(function()
+		local v450 = os.clock()
+		u122 = v450
+		u123 = u123 + (v450 - u122) * 1 / 4
+		if u123 >= 1 then
+			u123 = 1
+			u124:disconnect()
+		end
+		local v451 = SomeRandomLerp(p160, p161, u123)
+		u118(v451)
+		if v448 then
+			v448.ImageColor3 = v451.Vig
+		end
+		MinimapService.updateMapImageColor3(v451.Minimap)
+	end)
+end
+local RainSnow = ReplicatedStorage.Resource:FindFirstChild("RainSnow")
+if not RainSnow then
+	RainSnow = ReplicatedStorage.Resource.Rain
+end
+RainSnow.Name = "Rain"
+local StormHeartBeat = nil
+local CurrentWeather = "Day"
+function em.y60fwj1q(NewWeatherValue)
+	if NewWeatherValue == CurrentWeather then
+		return
+	end
+	if NewWeatherValue == "Day" then
+		UpdateMiniMapColor(Settings.Ambient[CurrentWeather], Settings.Ambient.Day)
+	elseif NewWeatherValue == "Night" then
+		UpdateMiniMapColor(Settings.Ambient[CurrentWeather], Settings.Ambient.Night)
+	elseif NewWeatherValue == "Storm" then
+		RainSnow.Parent = workspace
+		local u126 = Vector3.new()
+		StormHeartBeat = RunService.Heartbeat:Connect(function(p163)
+			debug.profilebegin("Rain Update")
+			if LocalPlayer.Character then
+				local l__PrimaryPart__452 = LocalPlayer.Character.PrimaryPart
+				if l__PrimaryPart__452 then
+					u126 = l__PrimaryPart__452.Position + l__PrimaryPart__452.Velocity * Vector3.new(1, 0, 1) * p163 * 4
+				end
+				local l__Humanoid__453 = LocalPlayer.Character:FindFirstChild("Humanoid")
+				if l__Humanoid__453 then
+					local v454 = l__Humanoid__453.Sit or l__Humanoid__453.PlatformStand
+				end
+			end
+			local l__Rain__455 = RainSnow.RainFall:FindFirstChild("Rain")
+			local l__Rain__456 = RainSnow.RainDroplets:FindFirstChild("Rain")
+			RainSnow.RainFall.CFrame = CFrame.new(u126) + Vector3.new(0, 37, 0)
+			local v457, v458 = workspace:FindPartOnRayWithIgnoreList(Ray.new(u126, Vector3.new(0, -1, 0) * 10), { workspace.Vehicles, LocalPlayer.Character, RainSnow })
+			RainSnow.RainDroplets.CFrame = CFrame.new(v458) + Vector3.new(0, 1.5, 0)
+			local v459, v460 = workspace:FindPartOnRayWithIgnoreList(Ray.new(u126, Vector3.new(0, 1, 0) * 200), { workspace.Vehicles, LocalPlayer.Character, RainSnow, workspace:FindFirstChild("Clouds") })
+			if l__Rain__455 then
+				l__Rain__455.Enabled = not v459
+			end
+			SoundService.Ambient.CompressorSoundEffect.Enabled = not (not v459)
+			debug.profileend()
+		end)
+		UpdateMiniMapColor(Settings.Ambient[CurrentWeather], Settings.Ambient.Storm)
+	end
+	if NewWeatherValue ~= "Storm" then
+		RainSnow.Parent = ReplicatedStorage.Resource
+		if StormHeartBeat then
+			StormHeartBeat:Disconnect()
+		end
+		StormHeartBeat = nil
+	end
+	CurrentWeather = NewWeatherValue
+end
+local NitroShop = NitroShopGui
+NitroShop.Parent = LocalPlayer.PlayerGui
+local newOpenFun = function()
+	NitroShop.Enabled = true
+	if Enum.UserInputType.Gamepad1 == nil then
+		GuiService.SelectedObject = NitroShop.Container.Container.ContainerButtons.Tier1.Button
+	end
+end
+SetNitroShop = function()
+	NitroShop.Enabled = false
+end
+local newWindow = AlexWM.MakeWindow()
+newWindow.OpenFun = newOpenFun
+newWindow.CloseFun = SetNitroShop
+AlexWM.WindowGroupAdd(MainWindowGroup, newWindow)
+
+NitroShop.Container.Close.MouseButton1Down:Connect(function()
+	AlexWM.WindowClose(newWindow)
+end)
+
+LocalPlayerValuesData.AtGasStation = false
+em.jvyh4sbz = function(p164, p165)
+	if not p164 then
+		LocalPlayerValuesData.AtGasStation = false
+		AlexWM.WindowClose(newWindow)
+		return
+	end
+	if not p165 then
+		LocalPlayerValuesData.AtGasStation = true
+	end
+	AlexWM.WindowOpen(newWindow)
+end
+VehicleModule.NitroShopVisible = false
+marketplacething = function()
+	if not Settings.FetchedMarketplace then
+		return false
+	end
+	for v461, v462 in pairs(Settings.DevProduct) do
+		if v462.Type == "Nitro" then
+			local v463 = NitroShop.Container.Container.ContainerButtons:FindFirstChild(v462.Name)
+			if v463 then
+				v463.Button.Title.Text = ("+%d"):format(v462.Fuel)
+				v463.Button.MouseButton1Down:connect(function()
+					if Settings.Scalar.NitroMax - 25 <= LocalPlayerValuesData.Nitro then
+						em.yzczkwdf({
+							Title = "Rocket Fuel", 
+							Text = "You have a lot of fuel, go use it!"
+						})
+						return
+					end
+					local v464 = true
+					if not LocalPlayerValuesData.AtGasStation and not GamepassSystem.DoesPlayerOwn(GamepassUtils.EnumGamepass.PremiumGarage) then
+						v464 = false
+						PromptPurchase(Settings.Gamepass.MobileGarage)
+					end
+					if v464 then
+						MarketplaceService:PromptProductPurchase(LocalPlayer, v462.Id)
+					end
+				end)
+			end
+		end
+	end
+	return true
+end
+spawn(function()
+	while not marketplacething() do
+		wait(1)	
+	end
+end)
+em.ao5wmmqy = function()
+	PlayerDataStored.HasEscaped = true
+	if not ChinaPolicyService:IsActive() then
+		em.yzczkwdf({
+			Text = ("%s"):format(Localization:FormatByKey("Banner.Escaped"))
+		})
+	end
+end
+em.x3ty2c0e = function()
+	if CurrentPacket then
+		CurrentPacket.TireHealth = 0
+	end
+end
+local u116dep = 1
+u118deprecated = function()
+	local v465 = nil
+	local v466 = nil
+	if PlayerTeamValue.Value == Settings.Team.Prisoner then
+		v465 = "Prisoner"
+		v466 = 3
+	elseif PlayerTeamValue.Value == Settings.Team.Police then
+		v465 = "Police"
+		v466 = 5
+	end
+	if not v465 then
+		return
+	end
+	local l__Help__467 = MainGui.Inventory.Help
+	u116dep = u116dep % v466 + 1
+	l__Help__467.Text = Localization:FormatByKey("Help." .. v465 .. u116dep - 1)
+	l__Help__467.Visible = true
+end
+function em.wctu5vc5(p166, ...)
+	if p166 == "ems" then
+		delay(0.5, function()
+			RemoteEvent:FireServer("wctu5vc5", p166)
+		end)
+	else
+		RemoteEvent:FireServer("wctu5vc5", p166)
+	end
+	assert(em[p166], p166)(...)
+end
+require(ReplicatedStorage.Game.TeamChooseUI).Init({
+	Event = RemoteEvent, 
+	em = em, 
+	OnJump = OnJumpAction
+})
+
+RunTagInsert(0.1, function()
+	local l__Character__470 = LocalPlayer.Character
+	if not l__Character__470 then
+		return
+	end
+	local l__PrimaryPart__471 = l__Character__470.PrimaryPart
+	if not l__PrimaryPart__471 then
+		return
+	end
+	for v475, v476 in pairs(workspace.Vehicles:GetChildren()) do
+		local l__Seat__477 = v476:FindFirstChild("Seat")
+		local l__BoundingBox__478 = v476:FindFirstChild("BoundingBox")
+		local l__Make__479 = v476:FindFirstChild("Make")
+
+		if l__BoundingBox__478 and l__Seat__477 then
+			local l__Player__480 = l__Seat__477:FindFirstChild("Player")
+			local l__MoneyBillboard__481 = l__BoundingBox__478:FindFirstChild("MoneyBillboard")
+
+			if l__MoneyBillboard__481 and l__Make__479 and l__Player__480 then
+				local v482 = false
+
+				if (l__PrimaryPart__471.Position - l__BoundingBox__478.Position).magnitude < 50 then
+					v482 = not l__Player__480.Value and (not LocalPlayerValuesData.VehiclesOwned[l__Make__479.Value] and not LocalPlayerValuesData.VehiclesRented[l__Make__479.Value])
+				end
+
+				l__MoneyBillboard__481.Enabled = v482
+			end
+		end
+	end
+
+end)
+function em.chdmgaeg()
+	wait()
+	ModuleUI.CircleAction.NotAllowed()
+end
+function UpdateVehicleUI(Packet)
+	local v484 = not CurrentPacket
+	local l__Part__485 = Packet.Part
+	if l__Part__485 and l__Part__485.Parent then
+		local v486 = nil
+		local v487 = nil
+		local v488 = nil
+		if PlayerTeamValue.Value == Settings.Team.Prisoner then
+			local l__TeamRestrict__489 = l__Part__485.Parent:FindFirstChild("TeamRestrict")
+			if l__TeamRestrict__489 and l__Part__485.Name == "Seat" and l__TeamRestrict__489.Value ~= PlayerTeamValue.Value then
+				v486 = true
+			end
+		elseif PlayerTeamValue.Value == Settings.Team.Police then
+			local v490 = ItemSystem.GetLocalEquipped()
+			if v490 and v490.__ClassName == "Handcuffs" then
+				v487 = true
+			end
+		end
+		if not v486 and not v487 then
+			v488 = true
+		end
+		local v491 = 10
+		if Packet.ShouldHotwire ~= v486 then
+			Packet.ShouldHotwire = v486
+			if v486 then
+				Packet.Name = "Hijack"
+				Packet.Timed = true
+				Packet.Duration = 8
+			end
+		end
+		if Packet.ShouldEject ~= v487 then
+			Packet.ShouldEject = v487
+			if v487 then
+				Packet.Name = "Eject"
+				Packet.Timed = false
+				Packet.Duration = 1
+				v491 = 12
+			end
+		end
+		if Packet.ShouldAllowEntry ~= v488 then
+			Packet.ShouldAllowEntry = v488
+			if v488 then
+				Packet.Timed = false
+				Packet.Name = l__Part__485.Name == "Seat" and "Enter Driver" or "Enter Passenger" --Localization:FormatByKey("Action.EnterPassenger")
+			end
+		end
+		if Packet.ShouldAllowEntry then
+			local l__Player__492 = l__Part__485:FindFirstChild("Player")
+			if l__Player__492 and l__Player__492.Value then
+				v484 = false
+			end
+		end
+		Packet.Dist = v491
+	end
+	if v484 ~= Packet.Enabled then
+		Packet.Enabled = v484
+	end
+end
+local u130 = function(p168)
+	local v493 = nil
+	local v494 = nil
+	local v495 = nil
+	local v496 = nil
+	local v497 = ItemSystem.GetLocalEquipped()
+	if RunUtils.isTradingEnabled() then
+		local v498 = Players:FindFirstChild(p168.PlayerName)
+		if v498 and v498 ~= LocalPlayer and TradeUtils.getPlayerTradeRequestsEnabled(v498) and TradeUtils.getPlayerTradeRequestsEnabled(LocalPlayer) and not TradeService.checkAlreadyInitiated(LocalPlayer, v498) and v498.Character and v498.Character:FindFirstChild("Humanoid") then
+			v496 = true
+		end
+	end
+	if v497 and v497.__ClassName == "Handcuffs" then
+		if PlayerTeamValue.Value == Settings.Team.Police then
+			local v499 = Players:FindFirstChild(p168.PlayerName)
+			if v499 and v499.TeamValue.Value == Settings.Team.Prisoner and v499.Character and not v499.Character:FindFirstChild("Handcuffs") then
+				local l__Humanoid__500 = v499.Character:FindFirstChild("Humanoid")
+				if l__Humanoid__500 and not l__Humanoid__500.Sit and not l__Humanoid__500.PlatformStand then
+					v493 = true
+				end
+			end
+		end
+	elseif PlayerTeamValue.Value == Settings.Team.Prisoner then
+		local v501 = Players:FindFirstChild(p168.PlayerName)
+		if v501 then
+			if v501.TeamValue.Value == Settings.Team.Police then
+				if v501.Character and LocalPlayer.Character then
+					local l__Humanoid__502 = LocalPlayer.Character:FindFirstChild("Humanoid")
+					local l__PrimaryPart__503 = LocalPlayer.Character.PrimaryPart
+					local l__PrimaryPart__504 = v501.Character.PrimaryPart
+					if l__PrimaryPart__503 and l__PrimaryPart__504 and l__Humanoid__502 and not l__Humanoid__502.Sit and not l__Humanoid__502.PlatformStand then
+						local l__CFrame__505 = l__PrimaryPart__503.CFrame
+						local l__CFrame__506 = l__PrimaryPart__504.CFrame
+						if l__CFrame__505.lookVector:Dot(l__CFrame__506.lookVector) >= 0.3333333333333333 and l__CFrame__506.lookVector:Dot((l__CFrame__506.p - l__CFrame__505.p).unit) >= 0.3333333333333333 then
+							v494 = true
+						end
+					end
+				end
+			elseif v501.TeamValue.Value == Settings.Team.Prisoner and PlayerDataStored.HasEscaped and v501.Character and LocalPlayer.Character and (v501.Character:FindFirstChild("Handcuffs") and not LocalPlayer.Character:FindFirstChild("Handcuffs")) then
+				v495 = true
+			end
+		end
+	end
+	local v507 = false
+	if v493 ~= p168.ShouldArrest then
+		p168.ShouldArrest = v493
+		v507 = true
+	end
+	if v494 ~= p168.ShouldPickpocket then
+		p168.ShouldPickpocket = v494
+		v507 = true
+	end
+	if v495 ~= p168.ShouldBreakout then
+		p168.ShouldBreakout = v495
+		v507 = true
+	end
+	if v496 ~= p168.ShouldTrade then
+		p168.ShouldTrade = v496
+		v507 = true
+	end
+	if v507 then
+		if v495 then
+			p168.Duration = 2
+			p168.Timed = true
+			p168.Dist = 10
+			p168.Name = Localization:FormatByKey("Action.Breakout")
+		elseif v494 then
+			p168.Duration = 2
+			p168.Timed = true
+			p168.Dist = 10
+			p168.Name = Localization:FormatByKey("Action.Pickpocket")
+		elseif v493 then
+			p168.Duration = 0.5
+			p168.Timed = true
+			p168.Dist = Handcuffs.ArrestDistance
+			p168.Name = Localization:FormatByKey("Action.Arrest")
+		elseif v496 then
+			p168.Timed = false
+			p168.Dist = 10
+			p168.Name = Localization:FormatByKey("Action.Trade")
+		end
+	end
+	local v508 = v493 or (v494 or (v495 or v496))
+	if v508 ~= p168.Enabled then
+		p168.Enabled = v508
+	end
+end
+local function u131(p169)
+	local v509 = p169.IKP
+	local l__Model__510 = p169.Model
+	local l__Engine__511 = l__Model__510:FindFirstChild("Engine")
+	if not l__Engine__511 then
+		return
+	end
+	if not v509 then
+		local v512 = Players:FindFirstChild(p169.PlayerName)
+		if not v512 then
+			return
+		end
+		local l__Character__513 = v512.Character
+		if not l__Character__513 then
+			return
+		end
+		local l__Humanoid__514 = l__Character__513:FindFirstChild("Humanoid")
+		if not l__Humanoid__514 then
+			return false
+		end
+		if not l__Humanoid__514.RootPart then
+			return false
+		end
+		v509 = R15IKv2.BuildPacketArms(l__Character__513)
+		p169.IKP = v509
+	end
+	local v515 = 0.5 * l__Engine__511.RotVelocity.Y
+	if p169.WeldSteer and v509 then
+		p169.WeldSteer.C0 = CFrame.Angles(0, v515, 0)
+		local v516 = l__Model__510.Steer.Size.X * 0.5 - 0.2
+		local l__CFrame__517 = l__Model__510.Steer.CFrame
+		v509.RightArm = l__CFrame__517 * Vector3.new(v516, 0.1, 0)
+		v509.RightAngle = -v515 - 0.6
+		v509.LeftArm = l__CFrame__517 * Vector3.new(-v516, 0.1, 0)
+		v509.LeftAngle = -v515 + 0.6
+		R15IKv2.Arms(v509)
+	end
+end
+RunService.Stepped:Connect(function()
+	debug.profilebegin("LQVehicle Stepped")
+	local v518 = os.clock()
+	local l__p__519 = CurrentCamera.CFrame.p
+	if AnyPacket and LocalPlayer.Character then
+		for v520, v521 in pairs(AnyPacket) do
+			if v520 ~= LocalPlayer.Name then
+				local v522 = false
+				local l__Model__523 = v521.Model
+				if l__Model__523 then
+					local l__BoundingBox__524 = l__Model__523:FindFirstChild("BoundingBox")
+					if l__BoundingBox__524 then
+						local l__Magnitude__525 = (l__BoundingBox__524.Position - l__p__519).Magnitude
+						local v526 = (l__Magnitude__525 - 256) / 3840
+						if l__Magnitude__525 < 256 then
+							v526 = 0
+						else
+							v526 = (l__Magnitude__525 - 256) / 3840
+						end
+						if v526 < v518 - (v521._lastUpdateStepped and 0) then
+							v521._lastUpdateStepped = v518
+							v522 = true
+						end
+					end
+				end
+				if v522 then
+					if v521.Type == "Chassis" then
+						u131(v521)
+					elseif v521.Type == "Motorcycle" or v521.Type == "DuneBuggy" then
+						if not v521.IKP then
+							local v527 = Players:FindFirstChild(v520)
+							if not v527 then
+								return
+							end
+							local l__Character__528 = v527.Character
+							if not l__Character__528 then
+								return
+							end
+							local l__Humanoid__529 = l__Character__528:FindFirstChild("Humanoid")
+							if not l__Humanoid__529 then
+								return false
+							end
+							if not l__Humanoid__529.RootPart then
+								return false
+							end
+							v521.IKP = R15IKv2.BuildPacketArms(l__Character__528)
+						end
+						Classes.Chassis2.UpdateStepped(v521)
+					end
+				end
+			end
+		end
+	end
+	debug.profileend()
+end)
+local function u132(p170, p171)
+	local l__Model__530 = p170.Model
+	local l__Height__531 = p170.Height
+	if not l__Model__530 then
+		return
+	end
+	local l__Engine__532 = l__Model__530:FindFirstChild("Engine")
+	if not l__Engine__532 then
+		return
+	end
+	local v533 = l__Engine__532.CFrame:vectorToObjectSpace(l__Engine__532.Velocity)
+	local v534 = (p170.WheelRotation + v533.Z * p171 / (l__Model__530.WheelFrontRight.Wheel.Size.Y * 0.5)) % (2 * math.pi)
+	p170.WheelRotation = v534
+	for v535, v536 in pairs(p170.Wheels) do
+		Classes.Chassis.UpdateWheelLowQuality(l__Model__530, l__Height__531, v536, v534)
+	end
+	Classes.Chassis.UpdateSoundLowQuality(p170, p170.Gears, v533)
+	local v537 = math.abs(v533.X)
+	if v537 > 10 then
+		p170.Sounds.DriftSqueal.Volume = math.min((v537 - 10) / 4, 0.3)
+	else
+		p170.Sounds.DriftSqueal.Volume = 0
+	end
+	local l__TirePopDuration__538 = p170.TirePopDuration
+	local l__TiresLastPop__539 = p170.TiresLastPop
+	local v540 = TimeModule.GetNowSync()
+	local v541 = (math.min((v540 - l__TiresLastPop__539[1]) / l__TirePopDuration__538, 1) + math.min((v540 - l__TiresLastPop__539[2]) / l__TirePopDuration__538, 1) + math.min((v540 - l__TiresLastPop__539[3]) / l__TirePopDuration__538, 1) + math.min((v540 - l__TiresLastPop__539[4]) / l__TirePopDuration__538, 1)) / 4 < 0.999
+	if p170.AreTiresPopped ~= v541 then
+		if v541 then
+			local v542 = {
+				Volume = 1
+			}
+			Audio.ObjectLocal(l__Engine__532, tire_assets.tire_pop, v542)
+			Audio.ObjectLocal(l__Engine__532, tire_assets.tire_leak, v542)
+		end
+		p170.AreTiresPopped = v541
+		PopVehicleTires(p170, v541)
+	end
+end
+RunService.Heartbeat:Connect(function(DeltaTime)
+	debug.profilebegin("LQVehicle Heartbeat")
+	local v543 = os.clock()
+	local l__p__544 = CurrentCamera.CFrame.p
+	if AnyPacket and LocalPlayer.Character then
+		for v545, v546 in pairs(AnyPacket) do
+			if v545 ~= LocalPlayer.Name then
+				local v547 = false
+				local l__Model__548 = v546.Model
+				if l__Model__548 then
+					local l__BoundingBox__549 = l__Model__548:FindFirstChild("BoundingBox")
+					if l__BoundingBox__549 then
+						local l__Magnitude__550 = (l__BoundingBox__549.Position - l__p__544).Magnitude
+						local v551 = 0
+						if l__Magnitude__550 < 768 then
+							v551 = 0
+						else
+							v551 = (l__Magnitude__550 - 768) / 3328
+						end
+						if v551 < v543 - (v546._lastUpdateHeartbeat or 0) then
+							v546._lastUpdateHeartbeat = v543
+							v547 = true
+						end
+					end
+				end
+				if v547 then
+					if v546.Type == "Heli" then
+						DisableHeli(v546, DeltaTime)
+					elseif v546.Type == "Chassis" then
+						u132(v546, DeltaTime)
+					elseif v546.Type == "Motorcycle" or v546.Type == "DuneBuggy" then
+						Classes.Chassis2.UpdateLQ(v546, DeltaTime)
+					end
+				end
+			end
+		end
+	end
+	debug.profileend()
+end)
+function UpdateCircleActions()
+	debug.profilebegin("UpdateCircleActions (game)")
+	local l__Character__552 = LocalPlayer.Character
+	if not l__Character__552 then
+		return
+	end
+	local l__PrimaryPart__553 = l__Character__552.PrimaryPart
+	if not l__PrimaryPart__553 then
+		return
+	end
+	local l__Position__554 = l__PrimaryPart__553.Position
+	local v555 = os.clock()
+	for i,v in ipairs(ModuleUI.CircleAction.Specs) do
+		local l__Part__559 = v.Part
+		local l__Magnitude__560 = ((v.WorldPosition or (l__Part__559 and l__Part__559.Position or Vector3.new(0, 0, 0))) - l__Position__554).Magnitude
+		local v561 = 0
+
+		if l__Magnitude__560 < 16 then
+			v561 = 0
+		else
+			v561 = (l__Magnitude__560 - 16) / 48
+		end
+
+		if v561 < v555 - (v._lastUpdateCheck or 0) then
+			v._lastUpdateCheck = v555
+			if v.IsVehicle then
+				UpdateVehicleUI(v)
+			elseif v.IsPlayer then
+				u130(v)
+			elseif v.IsRob then
+				local v562 = PlayerTeamValue.Value == Settings.Team.Prisoner
+				if v.Enabled ~= v562 then
+					v.Enabled = v562
+				end
+			end
+		end
+	end
+	debug.profileend()
+end
+local function u134()
+	local l__Character__563 = LocalPlayer.Character
+	if not l__Character__563 then
+		return
+	end
+	local l__Humanoid__564 = l__Character__563:FindFirstChild("Humanoid")
+	if not l__Humanoid__564 then
+		return
+	end
+	local v565 = math.max(math.log(l__Humanoid__564.Health + 1) / 4.61512051684126, 0.5)
+	local v566 = ItemSystem.GetLocalEquipped()
+	if v566 then
+		local v567 = InventoryItemUtils.getName(v566.inventoryItemValue)
+		if v567 == "Cuffed" then
+			v565 = 0
+		elseif v567 == "ShieldSWAT" then
+			v565 = v565 * 0.75
+		end
+	end
+	if IsRagdolling then
+		v565 = 0
+	end
+	local v568 = v565 * 16
+	if CharacterSizeChanges then
+		v568 = v568 * 0.4
+	end
+	if Falling.IsSkydiving() then
+		v568 = v568 * 4
+	elseif IsSprinting then
+		v568 = v568 * 1.5
+	end
+	if CharacterUtil.IsJuiced then
+		v568 = v568 + 20
+	end
+	if LocalPlayer.TeamValue.Value == Settings.Team.Prisoner then
+		for v569, v570 in pairs(Classes.Heli.SpotlightBinder:GetAllSet()) do
+			if v569.IsLocalInSpotlight then
+				v568 = v568 * 0.75
+			end
+		end
+	end
+	if l__Character__563:FindFirstChild("IsInFloorCircle") ~= nil then
+		v568 = v568 * 0.5
+	end
+	local v571 = CharacterUtil.WalkSpeedSpring:Update()
+	if v571 < 0 then
+		v571 = 0
+	end
+	if v571 > 10 then
+		v571 = 10
+	end
+	local v572 = v568 * v571
+	if math.abs(v572 - l__Humanoid__564.WalkSpeed) > 0.1 then
+		l__Humanoid__564.WalkSpeed = v572
+	end
+	if CurrentAnim then
+		local l__PrimaryPart__573 = l__Character__563.PrimaryPart
+		if l__PrimaryPart__573 then
+			CurrentAnim:AdjustSpeed(-l__Character__563.HumanoidRootPart.CFrame:vectorToObjectSpace(l__PrimaryPart__573.Velocity).Z / 6)
+		end
+	end
+end
+local u136 = 0
+local u137 = 0
+RunService.Heartbeat:Connect(function()
+	local v574 = tick()
+	UpdateCircleActions()
+	local l__Value__575 = PlayerTeamValue.Value
+	local CurrentTeam = nil
+	if l__Value__575 == Settings.Team.Prisoner then
+		if PlayerDataStored.HasEscaped then
+			CurrentTeam = Settings.EnumTeam.Criminal
+		else
+			CurrentTeam = Settings.EnumTeam.Prisoner
+		end
+	elseif l__Value__575 == Settings.Team.Police then
+		CurrentTeam = Settings.EnumTeam.Police
+	end
+	if GameUtil.Team ~= CurrentTeam then
+		GameUtil.Team = CurrentTeam
+		GameUtil.OnTeamChanged:Fire(CurrentTeam)
+	end
+	u134()
+	debug.profilebegin("Time/UI")
+	local l__Time__577 = workspace:FindFirstChild("Time")
+	if l__Time__577 then
+		local l__Value__578 = l__Time__577.Value
+		local v579 = l__Value__578 % 1
+		local v580 = l__Value__578 - v579
+		local v581 = math.floor(math.floor(v579 * 60 + 0.5) / 15) * 15
+		if v581 >= 60 then
+			v581 = v581 - 60
+			v580 = v580 + 1
+		end
+		if v580 > 12 then
+			v580 = v580 - 12
+		end
+		if v580 == 0 then
+			v580 = 12
+		end
+		if v580 ~= u136 or v581 ~= u137 then
+			u136 = v580
+			u137 = v581
+			local v582 = "PM"
+			if l__Value__578 >= 12 then
+				v582 = "PM"
+			else
+				v582 = "AM"
+			end
+			SidebarUI.SetTime((("%d:%02d %s"):format(v580, v581, v582)))
+		end
+	end
+	debug.profileend()
+end)
+
+UserInputService.InputBegan:Connect(function(Input, GameProcessed)
+	if GameProcessed and ((Input.UserInputType ~= Enum.UserInputType.Gamepad1 or Input.KeyCode ~= Enum.KeyCode.ButtonA) and Input.KeyCode ~= Enum.KeyCode.Left and Input.KeyCode ~= Enum.KeyCode.Right) then
+		return
+	end
+	if CurrentPacket then
+		if CurrentPacket.Type == "Chassis" then
+			Classes.Chassis.InputBegan(Input)
+		elseif CurrentPacket.Type == "Heli" then
+			Classes.Heli.InputBegan(Input)
+		elseif CurrentPacket.Type == "Custom" and CurrentPacket.Make == "Volt" then
+			Classes.Volt.InputBegan(Input)
+		end
+	end
+	if Input.UserInputType == Enum.UserInputType.Keyboard and Input.KeyCode == Enum.KeyCode.E and CurrentPacket and CurrentPacket.Type ~= "Heli" then
+		OnJumpAction()
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(Input, GameProcessed)
+	if GameProcessed and ((Input.UserInputType ~= Enum.UserInputType.Gamepad1 or Input.KeyCode ~= Enum.KeyCode.ButtonA) and Input.KeyCode ~= Enum.KeyCode.Left and Input.KeyCode ~= Enum.KeyCode.Right) then
+		return
+	end
+	if CurrentPacket then
+		if CurrentPacket.Type == "Chassis" then
+			Classes.Chassis.InputEnded(Input)
+			return
+		end
+		if CurrentPacket.Type == "Heli" then
+			Classes.Heli.InputEnded(Input)
+			return
+		end
+		if CurrentPacket.Type == "Custom" and CurrentPacket.Make == "Volt" then
+			Classes.Volt.InputEnded(Input)
+		end
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(p178)
+	if CurrentPacket then
+		if CurrentPacket.Type == "Chassis" then
+			Classes.Chassis.InputChanged(p178, nil)
+		elseif CurrentPacket.Type == "Heli" then
+			Classes.Heli.InputChanged(p178, nil)
+		elseif CurrentPacket.Type == "Custom" and CurrentPacket.Make == "Volt" then
+			Classes.Volt.InputChanged(p178, nil)
+		end
+	end
+	if p178.UserInputType == Enum.UserInputType.MouseMovement then
+		InputPosition = p178.Position
+	end
+end)
+local function VehicleEnter(SeatPart)
+	if CurrentPacket then
+		return
+	end
+	local VehicleModel = SeatPart.Parent
+	RemoteEvent:FireServer("VehicleEnter", VehicleModel, SeatPart)
+end
+do
+	local CircleAction = ModuleUI.CircleAction
+	local function EnterCallback(Settings, bool)
+		VehicleEnter(Settings.Part)
+		return true
+	end
+	local function CreateVehicleUI(Part)
+		local VehicleUI = {
+			Part = Part,
+			ValidRoot = Part.Parent,
+			Name = Part.Name == "Seat" and "Enter Driver" or "Enter Passenger", --"Enter",
+			Timed = false,
+			Duration = 1,
+			Dist = 10,
+			Callback = EnterCallback,
+			_lastUpdateCheck = 0
+		}
+		VehicleUI.IsVehicle = true
+		CircleAction.Add(VehicleUI, Part)
+	end
+	local function RemoveVehicleUI(CircleUI)
+		CircleAction.Remove(CircleUI)
+	end
+	for _, SeatPart in next, CollectionService:GetTagged("VehicleSeat") do
+		CreateVehicleUI(SeatPart)
+	end
+	CollectionService:GetInstanceAddedSignal("VehicleSeat"):Connect(CreateVehicleUI)
+	CollectionService:GetInstanceRemovedSignal("VehicleSeat"):Connect(RemoveVehicleUI)
+end
+u141 = ModuleUI.CircleAction
+local function u142(p186)
+	RemoteEvent:FireServer("bnz5bmsv", p186.Name)
+end
+u133 = function(p187)
+	local v592 = ItemSystem.GetLocalEquipped()
+	if not v592 then
+		return
+	end
+	if v592.__ClassName ~= "Handcuffs" then
+		return
+	end
+	if v592.Reloading then
+		return
+	end
+	if PlayerTeamValue.Value ~= Settings.Team.Police then
+		return
+	end
+	local v593 = Players:FindFirstChild(p187.PlayerName)
+	if not v593 then
+		return
+	end
+	if CurrentPacket then
+		return
+	end
+	if v593.TeamValue.Value ~= Settings.Team.Prisoner then
+		return
+	end
+	local l__Character__594 = LocalPlayer.Character
+	if not l__Character__594 then
+		return
+	end
+	local l__Humanoid__595 = l__Character__594:FindFirstChild("Humanoid")
+	if not l__Humanoid__595 then
+		return
+	end
+	if l__Humanoid__595.Health <= 0 then
+		return
+	end
+	u142(v593)
+	return true
+end
+local function u143(p188)
+	RemoteEvent:FireServer("s0ak43vg", p188.Name)
+end
+local function u144(p189)
+	RemoteEvent:FireServer("kuwti4g1", p189.Name)
+end
+local function u145(p190)
+	if TradeService.checkAlreadyInitiated(p190, LocalPlayer) then
+		TradeService.acceptInitiation(p190.UserId)
+		return
+	end
+	TradeService.sendInitiation(p190.UserId)
+end
+local u146 = function(p191, p192)
+	if not p192 then
+		return true
+	end
+	local v596 = nil
+	if p191.ShouldArrest then
+		v596 = u133(p191)
+	elseif p191.ShouldPickpocket then
+		local v597 = Players:FindFirstChild(p191.PlayerName)
+		if not v597 then
+			v596 = nil
+		else
+			u143(v597)
+			v596 = true
+		end
+	elseif p191.ShouldBreakout then
+		local v598 = Players:FindFirstChild(p191.PlayerName)
+		if not v598 then
+			v596 = nil
+		else
+			u144(v598)
+			v596 = true
+		end
+	end
+	if p191.ShouldTrade and (RunUtils.isTradeWorld() or not v596) then
+		local v599 = Players:FindFirstChild(p191.PlayerName)
+		if not v599 then
+			return nil
+		end
+		u145(v599)
+		v596 = true
+	end
+	return v596
+end
+local function v600(p193)
+	if p193 ~= LocalPlayer.Character then
+		u141.Add({
+			Part = p193:WaitForChild("UpperTorso", 3), 
+			ValidRoot = p193, 
+			Name = "Player", 
+			Timed = true, 
+			Duration = 0.5, 
+			Dist = 15, 
+			Priority = 2, 
+			Callback = u146, 
+			PlayerName = p193.Name, 
+			IsPlayer = true,
+			_lastUpdateCheck = 0
+		}, p193)
+	end
+end
+
+for v604, v605 in pairs(CollectionService:GetTagged("Character")) do
+	v600(v605)
+end
+CollectionService:GetInstanceAddedSignal("Character"):Connect(v600)
+CollectionService:GetInstanceRemovedSignal("Character"):Connect(function(p194)
+	if p194 ~= LocalPlayer.Character then
+		u141.Remove(p194)
+	end
+end)
+u141 = ModuleUI.CircleAction
+u133 = function(p195, p196)
+	if p196 then
+		RemoteEvent:FireServer("m3vrgfeu", p195.Part)
+	else
+		RemoteEvent:FireServer("s0e9wk0a", p195.Part)
+	end
+	return true
+end
+local function v606(p197)
+	u141.Add({
+		Part = p197, 
+		Name = "Rob", 
+		Timed = true, 
+		Duration = 10, 
+		Dist = 8, 
+		Callback = u133, 
+		IsRob = true,
+		_lastUpdateCheck = 0
+	}, p197)
+end
+
+for v609, v610 in pairs(CollectionService:GetTagged("SmallStore")) do
+	v606(v610)
+end
+
+CollectionService:GetInstanceAddedSignal("SmallStore"):Connect(v606)
+local v612 = CollectionService:GetInstanceRemovedSignal("SmallStore")
+v612:Connect(function(p198)
+	u141.Remove(p198)
+end)
+u141 = ModuleUI.CircleAction
+u133 = function(p199, p200)
+	if not p200 then
+		return
+	end
+	RemoteEvent:FireServer("peez0dcy", p199.Part.Parent)
+	return true
+end
+local function v613(p201)
+	local l__Parent__614 = p201.Parent
+	u141.Add({
+		Part = p201, 
+		ValidRoot = l__Parent__614, 
+		Name = ("Pick up %s"):format(l__Parent__614.Name), 
+		Timed = true, 
+		Duration = 0.5, 
+		Dist = 5, 
+		Callback = u133,
+		_lastUpdateCheck = 0
+	}, p201)
+end
+
+for v617, v618 in pairs(CollectionService:GetTagged("ItemDrop")) do
+	v613(v618)
+end
+
+CollectionService:GetInstanceAddedSignal("ItemDrop"):Connect(v613)
+CollectionService:GetInstanceRemovedSignal("ItemDrop"):Connect(u141.Remove)
+
+u141 = ModuleUI.CircleAction
+u133 = function(p202)
+	u141.Add({
+		Part = p202, 
+		Name = "Lift Gate", 
+		Timed = true, 
+		Duration = 2, 
+		Dist = 8, 
+		Callback = function(p203, p204)
+			if p204 then
+				RemoteEvent:FireServer("fmnkgcvy", "LiftGate")
+			end
+			return true
+		end
+	}, p202)
+end
+local u147 = function(p205)
+	u141.Add({
+		Part = p205, 
+		Name = "Explode Wall", 
+		Timed = true, 
+		Duration = 8, 
+		Dist = 5, 
+		Callback = function(p206, p207)
+			if p207 then
+				RemoteEvent:FireServer("fmnkgcvy", "ExplodeWall")
+			end
+			return true
+		end
+	}, p205)
+end
+local function v619(p208)
+	if p208.Name == "LiftGate" then
+		u133(p208)
+		return
+	end
+	if p208.Name == "ExplodeWall" then
+		u147(p208)
+		return
+	end
+	assert(false, p208.Name)
+end
+
+for v622, v623 in pairs(CollectionService:GetTagged("EscapeRoute")) do
+	v619(v623)
+end
+
+CollectionService:GetInstanceAddedSignal("EscapeRoute"):Connect(v619)
+CollectionService:GetInstanceRemovedSignal("EscapeRoute"):Connect(u141.Remove)
+
+local CurrentTime = tick()
+function JumpRequest()
+	local LastJumpAttempt = tick()
+	if LastJumpAttempt - CurrentTime < 0.1 then
+		return false
+	end
+	CurrentTime = LastJumpAttempt
+	OnJumpAction()
+end
+DefaultActions.onJumpPressed:Connect(JumpRequest)
+LocalPlayer.CharacterAdded:Connect(function(p209)
+	local u148 = nil
+	u148 = p209:WaitForChild("Humanoid").Died:Connect(function()
+		u148:Disconnect()
+		Falling.StartRagdolling(10)
+	end)
+end)
+local v627 = Instance.new("BindableEvent")
+v627.Event:Connect(function()
+	RemoteEvent:FireServer("jzfxqk1f")
+end)
+local u149 = v627
+delay(2, function()
+	local v628, v629 = pcall(function()
+		StarterGui:SetCore("ResetButtonCallback", u149)
+	end)
+	if not v628 then
+		print("MANUAL RESET ERROR")
+		print(v629)
+	end
+end)
+task.delay(10, function()
+	local l__KreeksTimeMachine__630 = workspace:FindFirstChild("KreeksTimeMachine")
+	if l__KreeksTimeMachine__630 and LocalPlayer.UserId == 140258990 then
+		l__KreeksTimeMachine__630:Destroy()
+	end
+end)
+u149 = false
+local u150 = false
+--local u151 = 0
+local u152 = nil
+local u153 = 0
+local function v631(p210)
+	local l__Humanoid__632 = p210:WaitForChild("Humanoid", 1)
+	if not l__Humanoid__632 then
+		return
+	end
+	if not p210:WaitForChild("HumanoidRootPart", 1) then
+		return
+	end
+	u150 = false
+	--u151 = Math.TimeAccumAdd(u151, 2)
+	if u152 then
+		u152:Disconnect()
+		u152 = nil
+	end
+	u152 = l__Humanoid__632.StateChanged:Connect(function(p211, p212)
+		if p212 == Enum.HumanoidStateType.StrafingNoPhysics then
+			u153 = Math.TimeAccumAdd(u153, 1)
+			if Math.TimeAccumDiff(u153) > 10 then
+				u153 = 0
+				if u149 then
+					return
+				end
+				u149 = true
+				NewFireServer("ostwdrjr", "NoClip StrafingNoPhysics", false)
+			end
+		end
+	end)
+end
+if LocalPlayer.Character then
+	v631(LocalPlayer.Character)
+end
+LocalPlayer.CharacterAdded:Connect(v631)
+spawn(function()
+	local v633, v634 = pcall(function()
+		LocalPlayer:WaitForChild("Backpack", 20).ChildAdded:Connect(function(p213)
+			if p213:IsA("BackpackItem") then
+				if u149 then
+					return
+				end
+				u149 = true
+				NewFireServer("ostwdrjr", "BackpackTool", false)
+			end
+		end)
+	end)
+	if not v633 then
+		warn("BACKPACK FAIL", v634)
+	end
+end)
+local v635 = { "B", "o", "d", "y", "P", "o", "s", "i", "t", "i", "o", "n" }
+local v636 = { "B", "o", "d", "y", "G", "y", "r", "o" }
+local l__FindFirstChildWhichIsA__637 = Instance.new("Model").FindFirstChildWhichIsA
+local u154 = {}
+local l__xpcall__155 = xpcall
+local function u156()
+	if u149 then
+		return
+	end
+	local l__Character__638 = LocalPlayer.Character
+	if not l__Character__638 then
+		return
+	end
+	local l__Humanoid__639 = l__Character__638:FindFirstChild("Humanoid")
+	if not l__Humanoid__639 then
+		return
+	end
+	if l__Humanoid__639.Health <= 0.001 then
+		if not u150 then
+			--u151 = Math.TimeAccumAdd(u151, 3)
+		end
+		u150 = true
+		return
+	end
+	local v640 = false
+	local v641 = nil
+	if l__Humanoid__639.JumpPower > 60 then
+		v640 = true
+		v641 = "JumpPower"
+	end
+	
+	local v643 = { { "MainNitro", PlayerGui:FindFirstChild("Nitro"), "Inf Nitro" }, { "ProductNitro", ProductGui:FindFirstChild("Nitro"), "Inf Nitro" } }
+
+	for _, v647 in pairs(v643) do
+		local v645 = v647[1]
+
+		if v647[2] then
+			u154[v645] = true
+		elseif u154[v645] then
+			v640 = true
+			v641 = v647[3]
+		end
+	end
+    --Magik ####
+	for v648, v649 in pairs({ "Workspace", "Players", "ReplicatedStorage" }) do
+		if game:GetService(v649).Name ~= v649 then
+			u154[v649] = true
+		elseif u154[v649] then
+			v640 = true
+			v641 = "Renamed Service"
+		end
+	end
+	local v650, v651 = pcall(function()
+		local l__GetObjects__652 = game.GetObjects
+	end)
+	if not RunService:IsStudio() and v650 then
+		v640 = true
+		v641 = "game.GetObjects"
+	end
+	if _G.antiarrest ~= nil then
+		v640 = true
+		v641 = "_G.antiarrest"
+	end
+	if xpcall ~= l__xpcall__155 then
+		v640 = true
+		v641 = "Xpcall pointer changed"
+	end
+	local u157 = false
+	xpcall(function()
+		return game[{}]
+	end, function()
+		u157 = true
+	end)
+	if not u157 then
+		v640 = true
+		v641 = "VisDetect"
+	end
+	if debug.getupvalues then
+		v640 = true
+		v641 = "Getupvalues"
+	end
+	if v640 then
+		u149 = true
+		NewFireServer("ostwdrjr", v641, false)
+	end
+end
+RunTagInsert(1, function()
+	local v653, v654 = pcall(u156)
+	if not v653 then
+		u149 = true
+		NewFireServer("ostwdrjr", "FailedPcall", false)
+	end
+end)
+EventInit()
