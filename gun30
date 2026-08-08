@@ -1,0 +1,45 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = {};
+local u1 = require(script.Parent.InventoryBinder);
+local u2 = require(script.Parent.InventoryItemSystem);
+function v2.init()
+	u1:Start();
+	u2.init();
+end;
+local u3 = require(script.Parent.InventoryConsts);
+function v2.getFor(p1)
+	local v3 = p1:FindFirstChild(u3.CURRENT_INVENTORY_VALUE_NAME);
+	if not v3 then
+		return;
+	end;
+	if not v3.Value then
+		return;
+	end;
+	return u1:Get(v3.Value);
+end;
+local u4 = require(l__ReplicatedStorage__1.Std.waitForChild);
+local u5 = require(l__ReplicatedStorage__1.Std.Maid);
+local u6 = require(l__ReplicatedStorage__1.Std.Promise);
+local u7 = require(l__ReplicatedStorage__1.Std.RxInstanceUtils);
+local u8 = require(l__ReplicatedStorage__1.Std.Binder.BinderUtils);
+function v2.promiseFor(p2)
+	return u4(p2, u3.CURRENT_INVENTORY_VALUE_NAME):andThen(function(p3)
+		local u9 = u5.new();
+		local v4 = u6.new(function(p4, p5)
+			u9:GiveTask(u7.observeProperty(p3, "Value", function(p6)
+				if not p6 then
+					p5();
+					return;
+				end;
+				p4(u8.promiseBoundClass(u1, p6));
+			end));
+		end);
+		v4:finally(function()
+			u9:Destroy();
+		end);
+		return v4;
+	end);
+end;
+return v2;
