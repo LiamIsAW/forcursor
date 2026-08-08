@@ -1,0 +1,58 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = {
+	calculateNewIndex = function(p1, p2, p3)
+		if p1 == p2 then
+			return p3;
+		end;
+		if p2 < p3 then
+			if p2 < p1 and p1 <= p3 then
+				return p1 - 1;
+			end;
+		elseif p3 < p2 and p1 < p2 and p3 <= p1 then
+			return p1 + 1;
+		end;
+		return p1;
+	end
+};
+local l__CollectionService__1 = game:GetService("CollectionService");
+local u2 = require(l__ReplicatedStorage__1.Inventory.InventoryItemConsts);
+local u3 = require(l__ReplicatedStorage__1.Hotbar.HotbarItemConsts);
+function v2.getOnHotbar(p4)
+	assert(l__CollectionService__1:HasTag(p4, u2.TAG_NAME), "provided inventoryItemValue is not an InventoryItem");
+	return l__CollectionService__1:HasTag(p4, u3.TAG_NAME);
+end;
+function v2.setOnHotbar(p5, p6)
+	assert(l__CollectionService__1:HasTag(p5, u2.TAG_NAME), "provided inventoryItemValue is not an InventoryItem");
+	assert(typeof(p6) == "boolean", "value must be a boolean");
+	if p6 then
+		l__CollectionService__1:AddTag(p5, u3.TAG_NAME);
+		return;
+	end;
+	l__CollectionService__1:RemoveTag(p5, u3.TAG_NAME);
+end;
+function v2.getDisplayOrder(p7)
+	assert(l__CollectionService__1:HasTag(p7, u3.TAG_NAME), "provided hotbarItemValue is not a HotbarItem");
+	return p7:GetAttribute(u3.DISPLAY_ORDER_ATTR_NAME);
+end;
+function v2.setDisplayOrder(p8, p9)
+	assert(l__CollectionService__1:HasTag(p8, u3.TAG_NAME), "provided hotbarItemValue is not a HotbarItem");
+	assert(typeof(p9) == "number", "value must be a string");
+	p8:SetAttribute(u3.DISPLAY_ORDER_ATTR_NAME, p9);
+end;
+function v2.getImageSrc(p10)
+	assert(l__CollectionService__1:HasTag(p10, u3.TAG_NAME), "provided hotbarItemValue is not a HotbarItem");
+	return p10:GetAttribute(u3.IMAGE_SRC_ATTR_NAME);
+end;
+function v2.setImageSrc(p11, p12)
+	assert(l__CollectionService__1:HasTag(p11, u3.TAG_NAME), "provided hotbarItemValue is not a HotbarItem");
+	assert(typeof(p12) == "string", "value must be a string");
+	p11:SetAttribute(u3.IMAGE_SRC_ATTR_NAME, p12);
+end;
+function v2.setBind(p13, p14)
+	assert(l__CollectionService__1:HasTag(p13, u3.TAG_NAME), "provided hotbarItemValue is not a HotbarItem");
+	assert(typeof(p14) == "string", "value must be a string");
+	p13:SetAttribute(u3.IMAGE_SRC_ATTR_NAME, p14);
+end;
+return v2;
