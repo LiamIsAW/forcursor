@@ -1,0 +1,28 @@
+
+local v1 = {
+	init = function()
+		require(script.Parent.HotbarItemSystem).init();
+	end
+};
+local u1 = require(script.Parent.HotbarItemRes);
+function v1.setColor(p1)
+	for v2, v3 in ipairs(u1.gui.Container:GetChildren()) do
+		if v3:IsA(u1.presetFrame.ClassName) then
+			v3.ImageColor3 = p1;
+			v3.Index.TextColor3 = p1;
+		end;	
+	end
+end;
+function v1.show()
+	local l__gui__5 = u1.gui;
+	if l__gui__5 then
+		l__gui__5.Enabled = true;
+	end;
+end;
+function v1.hide()
+	local l__gui__6 = u1.gui;
+	if l__gui__6 then
+		l__gui__6.Enabled = false;
+	end;
+end;
+return v1;
