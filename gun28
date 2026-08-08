@@ -1,0 +1,145 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local v2 = require(l__ReplicatedStorage__1.Std.Signal);
+local u1 = require(script.Parent.InventoryItemUtils);
+local u2 = {
+	onInventoryItemEquipped = v2.new(), 
+	onInventoryItemUnequipped = v2.new(), 
+	_equipConditions = {}, 
+	_unequipConditions = {}
+};
+local u3 = require(script.Parent.InventoryItemConsts);
+local u4 = require(script.Parent.InventoryItemBinder);
+local u5 = require(script.Parent.InventoryItemOwnerBinder);
+local l__UserInputService__6 = game:GetService("UserInputService");
+local l__Players__7 = game:GetService("Players");
+function u2.init()
+	u4:GetClassAddedSignal():Connect(function(p1)
+		local u8 = nil;
+		local function v3()
+			local v4 = true;
+			if not p1:GetOwner() then
+				v4 = false;
+			end;
+			local v5 = u1.getEquipped(p1.obj);
+			if not v4 then
+				return;
+			end;
+			if v5 == u8 then
+				return;
+			end;
+			u8 = v5;
+			if v5 then
+				u2.onInventoryItemEquipped:Fire(p1);
+				--u2.onInventoryItemUnequipped:Fire(p1);
+				return;
+			end;
+			u2.onInventoryItemUnequipped:Fire(p1);
+		end;
+		v3();
+		p1._maid:GiveTask(p1.obj:GetAttributeChangedSignal(u3.EQUIPPED_ATTR_NAME):Connect(v3));
+		if not p1:GetOwner() then
+			p1._maid:GivePromise(p1:PromiseOwner():andThen(v3));
+		end;
+	end);
+	u4:GetClassRemovingSignal():Connect(function(p2)
+		if u1.getEquipped(p2.obj) then
+			u2.onInventoryItemUnequipped:Fire(p2);
+		end;
+	end);
+	u4:GetClassAddedSignal():Connect(function(p3)
+		p3._maid:GiveTask(p3.onAttemptSelect:Connect(function()
+			if not u2.unequipAll() then
+				return false;
+			end;
+			if not u1.getEquipped(p3.obj) then
+				u2.toggleEquip(p3);
+			end;
+		end));
+	end);
+	u4:Start();
+	u5:Start();
+	u2.addUnequipCondition(function(p4)
+		if u1.getLocked(p4.obj) then
+			return false;
+		end;
+		return true;
+	end);
+	l__UserInputService__6.InputBegan:Connect(function(p5, p6)
+		if p6 then
+			return;
+		end;
+		if p5.UserInputType == Enum.UserInputType.Keyboard and p5.KeyCode == Enum.KeyCode.Backspace then
+			for v6, v7 in ipairs((u2.getEquippedFor(l__Players__7.LocalPlayer))) do
+				v7:AttemptDrop();			
+			end
+		end;
+	end);
+end;
+function u2.addEquipCondition(p7)
+	table.insert(u2._equipConditions, p7);
+end;
+function u2.addUnequipCondition(p8)
+	table.insert(u2._unequipConditions, p8);
+end;
+function u2.unequipAll()
+	for v9, v10 in ipairs((u2.getInventoryItemsFor(l__Players__7.LocalPlayer))) do
+		if u1.getEquipped(v10.obj) then
+			for v12, v13 in ipairs(u2._unequipConditions) do
+				if not v13(v10) then
+					return false;
+				end;
+			end
+			v10:AttemptSetEquipped(false);
+		end;
+	end
+	return true;
+end;
+function u2.toggleEquip(p9)
+	if not u1.getEquipped(p9.obj) then
+		for v15, v16 in ipairs(u2._equipConditions) do
+			if not v16(p9) then
+				return;
+			end;	
+		end
+		p9:AttemptSetEquipped(true);
+	else
+		for v18, v19 in ipairs(u2._unequipConditions) do
+			if not v19(p9) then
+				return;
+			end;	
+		end
+		p9:AttemptSetEquipped(false);
+	end;
+	return true;
+end;
+local u9 = require(l__ReplicatedStorage__1.Std.TableUtils);
+function u2.getInventoryItemsFor(p10)
+	return u9.filter(u4:GetAll(), function(p11)
+		return p11:GetOwner() == p10;
+	end);
+end;
+local u10 = require(l__ReplicatedStorage__1.Std.Binder.BinderUtils);
+function u2.getInventoryItemsOfInventoryValue(p12)
+	return u10.getChildren(u4, p12);
+end;
+function u2.getEquipped()
+	return u9.filter(u4:GetAll(), function(p13)
+		return u1.getEquipped(p13.obj);
+	end);
+end;
+function u2.getEquippedFor(p14)
+	return u9.filter(u2.getEquipped(), function(p15)
+		return p15:GetOwner() == p14;
+	end);
+end;
+function u2.playerHasItem(p16, p17)
+	for v21, v22 in ipairs(u2.getInventoryItemsFor(p16)) do
+		if v22:GetName() == p17 then
+			return true;
+		end;	
+	end
+	return false;
+end;
+return u2;
