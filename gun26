@@ -1,0 +1,8 @@
+
+return require(game:GetService("ReplicatedStorage").Std.TableUtils).requireValidIndex({
+	TAG_NAME = "InventoryItem", 
+	EQUIP_REMOTE_NAME = "InventoryEquipRemote", 
+	EQUIPPED_ATTR_NAME = "InventoryItemEquipped", 
+	LOCKED_ATTR_NAME = "InventoryItemLocked", 
+	PRIORITY_ATTR_NAME = "InventoryItemPriority"
+});
