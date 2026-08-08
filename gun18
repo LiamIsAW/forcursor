@@ -1,0 +1,161 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+local u1 = {
+	isDragging = false
+};
+local l__Players__2 = game:GetService("Players");
+local u3 = require(script.Parent.HotbarItemBinder);
+local u4 = require(l__ReplicatedStorage__1.Std.TableUtils);
+local u5 = require(script.Parent.HotbarItemUtils);
+local u6 = require(script.Parent.HotbarItemConsts);
+local u7 = require(l__ReplicatedStorage__1.Std.Maid);
+local l__RunService__8 = game:GetService("RunService");
+local l__UserInputService__9 = game:GetService("UserInputService");
+local u10 = require(l__ReplicatedStorage__1.Inventory.InventoryItemBinder);
+local u11 = require(l__ReplicatedStorage__1.Inventory.InventoryItemSystem);
+function u1.init()
+	require(script.Parent.HotbarItemRes).init();
+	local u12 = { Enum.KeyCode.One, Enum.KeyCode.Two, Enum.KeyCode.Three, Enum.KeyCode.Four, Enum.KeyCode.Five, Enum.KeyCode.Six, Enum.KeyCode.Seven, Enum.KeyCode.Eight, Enum.KeyCode.Nine, Enum.KeyCode.Zero };
+	local function u13()
+		if u1.isDragging then
+			return;
+		end;
+		local v2 = u1.getSortedHotbarItemsFor(l__Players__2.LocalPlayer);
+		for v3 = 1, #v2 do
+			local v4 = nil;
+			v4 = v2[v3];
+			if u12[v3] then
+				v4:SetKeyCode(u12[v3]);
+				v4:SetBindText(("%d"):format(v3));
+			else
+				v4:SetKeyCode(nil);
+				v4:SetBindText(nil);
+			end;
+		end;
+	end;
+	u3:GetClassAddedSignal():Connect(function(p1)
+		if p1:GetOwner() ~= l__Players__2.LocalPlayer then
+			return;
+		end;
+		u5.setDisplayOrder(p1.obj, math.max(unpack(u4.map(u1.getHotbarItemsFor(p1:GetOwner()), function(p2)
+			return u5.getDisplayOrder(p2.obj) or 0;
+		end))) + 1);
+		u13();
+		p1._maid:GiveTask(p1.obj:GetAttributeChangedSignal(u6.DISPLAY_ORDER_ATTR_NAME):Connect(u13));
+		p1._maid:GiveTask(p1.onDragStarted:Connect(function()
+			assert(not u1.isDragging, "somehow hotbar is already dragging");
+			u1.isDragging = true;
+			local v5 = u7.new();
+			v5:GiveTask(function()
+				u1.isDragging = false;
+			end);
+			p1._maid._dragMaid = v5;
+			local v6 = u1.getSortedHotbarItemsFor(p1:GetOwner());
+			local v7 = #v6;
+			p1:SetSize(1.2);
+			v5:GiveTask(function()
+				p1:SetSize(1);
+				p1:Spin();
+			end);
+			local v8 = table.find(v6, p1);
+			local l__X__9 = p1._frame.Parent.UIListLayout.AbsoluteContentSize.X;
+			local u14 = p1._frame.Parent.AbsolutePosition.X + p1._frame.Parent.AbsoluteSize.X * 0.5 - l__X__9 * 0.5;
+			local u15 = v8;
+			local u16 = l__X__9 / v7;
+			v5:GiveTask(l__RunService__8.Heartbeat:Connect(function()
+				u15 = math.floor((l__UserInputService__9:GetMouseLocation().X - u14) / u16) + 1;
+				if u15 < 1 then
+					u15 = 1;
+				elseif v7 < u15 then
+					u15 = v7;
+				end;
+				for v10, v11 in ipairs(v6) do
+					u5.setDisplayOrder(v11.obj, u5.calculateNewIndex(v10, v8, u15));				
+				end
+			end));
+			v5:GiveTask(l__UserInputService__9.InputEnded:Connect(function(p3)
+				if p3.UserInputType == Enum.UserInputType.MouseButton1 or p3.UserInputType == Enum.UserInputType.Touch then
+					p1._maid._dragMaid = nil;
+					u13();
+				end;
+			end));
+		end));
+		p1._maid:GiveTask(p1:GetInventoryItem():GetEquippedSignal():Connect(function()
+			p1:SetDropVisible(p1:GetInventoryItem():GetEquipped());
+		end));
+		if p1:GetInventoryItem():GetEquipped() then
+			p1:SetDropVisible(p1:GetInventoryItem():GetEquipped());
+		end;
+	end);
+	u3:GetClassRemovingSignal():Connect(function(p4)
+		if p4:GetOwner() ~= l__Players__2.LocalPlayer then
+			return;
+		end;
+		task.defer(u13);
+	end);
+	u3:Start();
+	l__UserInputService__9.InputBegan:Connect(function(p5, p6)
+		if p6 then
+			return;
+		end;
+		if p5.UserInputType == Enum.UserInputType.Keyboard then
+			for v13, v14 in ipairs((u1.getHotbarItemsFor(l__Players__2.LocalPlayer))) do
+				if p5.KeyCode == v14.keyCode then
+					local v16 = u10:Get(v14.obj);
+					assert(v16, "hotbarItem is somehow not simultaneously inventoryItem");
+					v16:AttemptSelect();
+				end;			
+			end
+		end;
+	end);
+	l__UserInputService__9.InputBegan:Connect(function(p7, p8)
+		if p8 then
+			return false;
+		end;
+		if p7.UserInputType == Enum.UserInputType.Gamepad1 then
+			local v17 = nil;
+			if p7.KeyCode == Enum.KeyCode.ButtonL1 then
+				v17 = -1;
+			elseif p7.KeyCode == Enum.KeyCode.ButtonR1 then
+				v17 = 1;
+			end;
+			if v17 then
+				local v18 = u1.getSortedHotbarItemsFor(l__Players__2.LocalPlayer);
+				local v19 = u11.getEquippedFor(l__Players__2.LocalPlayer)[1];
+				local v20 = 1;
+				if v19 then
+					for v21 = 1, #v18 do
+						if v18[v21].obj == v19.obj then
+							v20 = v21;
+							break;
+						end;
+					end;
+					v20 = v20 + v17;
+					if v20 <= 0 then
+						v20 = 0;
+					elseif #v18 + 1 <= v20 then
+						v20 = #v18 + 1;
+					end;
+					u11.unequipAll();
+				end;
+				if v18[v20] then
+					u11.toggleEquip(v18[v20]:GetInventoryItem());
+				end;
+			end;
+		end;
+	end);
+end;
+function u1.getHotbarItemsFor(p9)
+	return u4.filter(u3:GetAll(), function(p10)
+		return p10:GetOwner() == p9;
+	end);
+end;
+function u1.getSortedHotbarItemsFor(p11)
+	local v22 = u1.getHotbarItemsFor(p11);
+	table.sort(v22, function(p12, p13)
+		return (u5.getDisplayOrder(p12.obj) and 0) < (u5.getDisplayOrder(p13.obj) and 0);
+	end);
+	return v22;
+end;
+return u1;
