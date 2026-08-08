@@ -1,0 +1,4 @@
+
+
+local l__ReplicatedStorage__1 = game:GetService("ReplicatedStorage");
+return require(l__ReplicatedStorage__1.Std.Binder).new(require(l__ReplicatedStorage__1.Inventory.InventoryConsts).TAG_NAME, require(script.Parent.Inventory));
